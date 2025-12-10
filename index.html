@@ -410,7 +410,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
-        // Configuration - FIXED URL
+        // Configuration
         const BACKEND_URL = "https://aiexpensetracker-p7ux.onrender.com";
         
         // Get user_id from localStorage or use default
@@ -429,14 +429,38 @@
         const overallTotal = document.getElementById('overall-total');
         const totalSpent = document.getElementById('total-spent');
         
+        // ========================
+        // Authentication Check
+        // ========================
+        
+        function checkAuth() {
+            const userId = localStorage.getItem('user_id');
+            if (!userId) {
+                window.location.href = 'login.html';
+                return null;
+            }
+            return userId;
+        }
+        
+        // ========================
+        // Main Functions
+        // ========================
+        
         // Initialize the UI
         document.addEventListener('DOMContentLoaded', function() {
+            USER_ID = checkAuth();
+            if (!USER_ID) return;
+            
+            // Set username display
+            const username = localStorage.getItem('username') || USER_ID;
+            document.getElementById('username').textContent = username;
+            
             showWelcomeMessage();
             loadExpenses();
             loadChatHistory();
             
-            // Set username display
-            document.getElementById('username').textContent = USER_ID;
+            // Test backend connection
+            testBackendConnection();
         });
         
         // Show welcome message
@@ -472,8 +496,6 @@
             try {
                 console.log('Fetching expenses from:', `${BACKEND_URL}/expenses?user_id=${USER_ID}`);
                 
-                //MAinnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn
-
                 const response = await fetch(`${BACKEND_URL}/expenses?user_id=${USER_ID}`);
                 
                 if (!response.ok) {
@@ -521,7 +543,7 @@
                     <i class="fas fa-exclamation-triangle me-2"></i>
                     <strong>Connection Error</strong><br>
                     ${errorMsg}<br>
-                    <small>Make sure the backend is running at ${BACKEND_URL}</small>
+                    <small>Backend URL: ${BACKEND_URL}</small>
                     <br><br>
                     <button class="btn btn-sm btn-primary" onclick="testBackendConnection()">
                         <i class="fas fa-sync-alt me-1"></i> Retry Connection
@@ -562,7 +584,7 @@
                 // Normalize category names
                 const normalizedCategory = normalizeCategory(category);
                 
-                if (categoryTotals.hasOwnProperty(normalizedCategory)) { //imppppppppppppppppppppp
+                if (categoryTotals.hasOwnProperty(normalizedCategory)) {
                     categoryTotals[normalizedCategory] += amount;
                 } else {
                     categoryTotals["Other"] += amount;
@@ -659,7 +681,6 @@
         }
         
         // Load chat history from backend
-        //impppppppppppppppppppppppppppppppp asyn
         async function loadChatHistory() {
             try {
                 console.log('Fetching chat history from:', `${BACKEND_URL}/memory/${USER_ID}`);
@@ -677,6 +698,7 @@
                 displayChatHistory(memories);
             } catch (error) {
                 console.error('Error loading chat history:', error);
+                // Don't show error for chat history, it's okay if empty
             }
         }
         
@@ -730,7 +752,7 @@
             }, 100);
         }
         
-        // Send expense message to backend
+        // Send expense message to backend - FIXED FOR 422 ERROR
         async function sendExpenseMessage() {
             const text = expenseInput.value.trim();
             if (!text) return;
@@ -749,21 +771,31 @@
             try {
                 console.log('Sending message to chatbot:', text);
                 
-                // Send to backend
+                // Create form data with proper encoding
+                const formData = new URLSearchParams();
+                formData.append('user_input', text);
+                
+                console.log('Sending form data:', formData.toString());
+                
                 const response = await fetch(`${BACKEND_URL}/chatbot/${USER_ID}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
                     },
-                    body: new URLSearchParams({
-                        'user_input': text
-                    })
+                    body: formData
                 });
                 
-                console.log('Chatbot response status:', response.status);
+                console.log('Response status:', response.status);
                 
                 if (!response.ok) {
-                    throw new Error(`Server error: ${response.status}`);
+                    let errorDetails = '';
+                    try {
+                        const errorData = await response.json();
+                        errorDetails = JSON.stringify(errorData);
+                    } catch (e) {
+                        errorDetails = response.statusText;
+                    }
+                    throw new Error(`Server error: ${response.status} - ${errorDetails}`);
                 }
                 
                 const data = await response.json();
@@ -777,7 +809,24 @@
                 
             } catch (error) {
                 console.error('Error sending message:', error);
-                addAIMessage(`Sorry, I encountered an error: ${error.message}. Please try again.`);
+                
+                // Show user-friendly error message
+                let userErrorMessage = `Sorry, I encountered an error: ${error.message}.`;
+                
+                // Suggest common fixes for 422 error
+                if (error.message.includes('422')) {
+                    userErrorMessage = `
+                        <p>I couldn't process that format. Try these examples:</p>
+                        <ul class="mb-0">
+                            <li>"Bought a t-shirt for ₹200"</li>
+                            <li>"Spent ₹150 on lunch"</li>
+                            <li>"Paid ₹500 for groceries today"</li>
+                            <li>"Taxi ride cost ₹300"</li>
+                        </ul>
+                    `;
+                }
+                
+                addAIMessage(userErrorMessage);
             } finally {
                 // Re-enable input
                 expenseInput.disabled = false;
@@ -835,6 +884,46 @@
             chatHistory.scrollTop = chatHistory.scrollHeight;
         }
         
+        // Test backend connection
+        async function testBackendConnection() {
+            try {
+                console.log('Testing connection to:', BACKEND_URL);
+                const response = await fetch(`${BACKEND_URL}/`);
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Backend connection successful:', data);
+                    
+                    // Show success
+                    const successAlert = document.createElement('div');
+                    successAlert.className = 'alert alert-success alert-dismissible fade show';
+                    successAlert.innerHTML = `
+                        <i class="fas fa-check-circle me-2"></i>
+                        Connected to backend successfully!
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    `;
+                    recentExpenses.parentNode.insertBefore(successAlert, recentExpenses);
+                    
+                    return true;
+                } else {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+            } catch (error) {
+                console.error('Backend connection test failed:', error);
+                
+                // Show error
+                const errorAlert = document.createElement('div');
+                errorAlert.className = 'alert alert-danger';
+                errorAlert.innerHTML = `
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Connection Error</strong><br>
+                    ${error.message}
+                `;
+                recentExpenses.parentNode.insertBefore(errorAlert, recentExpenses);
+                
+                return false;
+            }
+        }
+        
         // Utility functions
         function getCategoryClass(category) {
             const normalized = normalizeCategory(category);
@@ -882,37 +971,11 @@
         function logout() {
             // Clear user data
             localStorage.removeItem('user_id');
+            localStorage.removeItem('username');
+            localStorage.removeItem('user_email');
+            
             alert('Logged out successfully!');
             window.location.href = 'login.html';
-        }
-        
-        // Test backend connection
-        async function testBackendConnection() {
-            try {
-                console.log('Testing connection to:', BACKEND_URL);
-                const response = await fetch(`${BACKEND_URL}/`);
-                if (response.ok) {
-                    console.log('Backend connection successful');
-                    // Reload data if connection is successful
-                    loadExpenses();
-                    loadChatHistory();
-                    
-                    // Show success message
-                    const successAlert = document.createElement('div');
-                    successAlert.className = 'alert alert-success alert-dismissible fade show';
-                    successAlert.innerHTML = `
-                        <i class="fas fa-check-circle me-2"></i>
-                        Connected to backend successfully!
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    `;
-                    recentExpenses.parentNode.insertBefore(successAlert, recentExpenses);
-                } else {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-            } catch (error) {
-                console.error('Backend connection test failed:', error);
-                alert(`Cannot connect to backend: ${error.message}\n\nPlease ensure:\n1. Your backend is running at ${BACKEND_URL}\n2. CORS is enabled on the backend\n3. The URL is correct`);
-            }
         }
         
         // Event Listeners
@@ -934,9 +997,6 @@
         // Initialize textarea height
         expenseInput.style.height = 'auto';
         expenseInput.style.height = expenseInput.scrollHeight + 'px';
-        
-        // Test backend connection on load
-        testBackendConnection();
     </script>
 </body>
 </html>
