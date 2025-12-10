@@ -10,7 +10,108 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="static\dashboard.css">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3a0ca3;
+            --success-color: #4cc9f0;
+            --warning-color: #f8961e;
+            --danger-color: #f72585;
+            --info-color: #7209b7;
+            --purple-color: #7209b7;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+        }
+        
+        .stats-card {
+            border-radius: 12px;
+            transition: transform 0.3s;
+        }
+        
+        .stats-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .recent-transaction {
+            transition: transform 0.2s;
+        }
+        
+        .recent-transaction:hover {
+            transform: translateX(5px);
+        }
+        
+        .spending-progress {
+            height: 6px;
+            border-radius: 3px;
+        }
+        
+        .border-purple {
+            border-color: var(--purple-color) !important;
+        }
+        
+        .text-purple {
+            color: var(--purple-color) !important;
+        }
+        
+        .bg-purple {
+            background-color: var(--purple-color) !important;
+        }
+        
+        .bg-purple-opacity-10 {
+            background-color: rgba(114, 9, 183, 0.1) !important;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        .chart-wrapper {
+            position: relative;
+        }
+        
+        .category-breakdown .progress {
+            height: 8px;
+        }
+        
+        /* Custom scrollbar */
+        .recent-transactions {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .recent-transactions::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .recent-transactions::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        .recent-transactions::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 10px;
+        }
+        
+        .recent-transactions::-webkit-scrollbar-thumb:hover {
+            background: #a1a1a1;
+        }
+    </style>
 </head>
 <body class="bg-light">
     <!-- Navigation Bar -->
@@ -22,7 +123,7 @@
             <div class="d-flex align-items-center">
                 <div class="dropdown me-3">
                     <button class="btn btn-outline-primary dropdown-toggle" type="button" id="periodMenu" data-bs-toggle="dropdown">
-                        <i class="bi bi-calendar-range me-1"></i> This Month
+                        <i class="bi bi-calendar-range me-1"></i> <span id="periodText">This Month</span>
                     </button>
                     <ul class="dropdown-menu">
                         <li><a class="dropdown-item" href="#" onclick="changePeriod('week')">This Week</a></li>
@@ -33,15 +134,13 @@
                 </div>
                 <div class="dropdown">
                     <button class="btn btn-outline-primary dropdown-toggle" type="button" id="userMenu" data-bs-toggle="dropdown">
-                        <i class="bi bi-person me-1"></i> User
+                        <i class="bi bi-person me-1"></i> <span id="username">User</span>
                     </button>
                     <ul class="dropdown-menu">
                         <li><a class="dropdown-item active" href="#"><i class="bi bi-speedometer2 me-2"></i>Dashboard</a></li>
                         <li><a class="dropdown-item" href="index.html"><i class="bi bi-chat-dots me-2"></i>Expense Chat</a></li>
-                        <!-- <li><a class="dropdown-item" href="#"><i class="bi bi-clock-history me-2"></i>History</a></li> -->
                         <li><hr class="dropdown-divider"></li>
-                        <!-- <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Settings</a></li> -->
-                        <li><a class="dropdown-item" href="#"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="logout()"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
                     </ul>
                 </div>
             </div>
@@ -54,7 +153,7 @@
             <div class="col-12">
                 <div class="d-flex justify-content-between align-items-center">
                     <h2 class="fw-bold">Expense Dashboard</h2>
-                    <button class="btn btn-primary" onclick="location.href='#'">
+                    <button class="btn btn-primary" onclick="location.href='index.html'">
                         <i class="bi bi-plus-circle me-2"></i>Add Expense
                     </button>
                 </div>
@@ -63,16 +162,14 @@
         </div>
 
         <!-- Stats Cards -->
-        <div class="row g-4 mb-4">
+        <div class="row g-4 mb-4" id="stats-cards">
             <div class="col-xl-3 col-md-6">
                 <div class="stats-card bg-white p-4 shadow-sm fade-in">
                     <div class="d-flex justify-content-between align-items-start">
                         <div>
                             <h6 class="text-muted mb-2">Total Spent</h6>
-                            <h3 class="fw-bold">₹12,540</h3>
-                            <span class="text-success small">
-                                <i class="bi bi-arrow-up-right me-1"></i>8.5% from last month
-                            </span>
+                            <h3 class="fw-bold" id="total-spent">₹0</h3>
+                            <span class="text-muted small" id="total-period">This month</span>
                         </div>
                         <div class="bg-primary bg-opacity-10 p-3 rounded-circle">
                             <i class="bi bi-cash-stack text-primary fs-4"></i>
@@ -86,10 +183,8 @@
                     <div class="d-flex justify-content-between align-items-start">
                         <div>
                             <h6 class="text-muted mb-2">Daily Average</h6>
-                            <h3 class="fw-bold">₹418</h3>
-                            <span class="text-danger small">
-                                <i class="bi bi-arrow-down-right me-1"></i>12.3% from last month
-                            </span>
+                            <h3 class="fw-bold" id="daily-average">₹0</h3>
+                            <span class="text-muted small" id="avg-period">This month</span>
                         </div>
                         <div class="bg-success bg-opacity-10 p-3 rounded-circle">
                             <i class="bi bi-graph-up-arrow text-success fs-4"></i>
@@ -103,10 +198,8 @@
                     <div class="d-flex justify-content-between align-items-start">
                         <div>
                             <h6 class="text-muted mb-2">Total Transactions</h6>
-                            <h3 class="fw-bold">84</h3>
-                            <span class="text-success small">
-                                <i class="bi bi-arrow-up-right me-1"></i>15.2% from last month
-                            </span>
+                            <h3 class="fw-bold" id="total-transactions">0</h3>
+                            <span class="text-muted small" id="transactions-period">This month</span>
                         </div>
                         <div class="bg-warning bg-opacity-10 p-3 rounded-circle">
                             <i class="bi bi-receipt text-warning fs-4"></i>
@@ -120,7 +213,7 @@
                     <div class="d-flex justify-content-between align-items-start">
                         <div>
                             <h6 class="text-muted mb-2">Budget Remaining</h6>
-                            <h3 class="fw-bold">₹7,460</h3>
+                            <h3 class="fw-bold" id="budget-remaining">₹20,000</h3>
                             <span class="text-muted small">of ₹20,000 budget</span>
                         </div>
                         <div class="bg-info bg-opacity-10 p-3 rounded-circle">
@@ -128,7 +221,7 @@
                         </div>
                     </div>
                     <div class="progress spending-progress mt-3">
-                        <div class="progress-bar bg-success" style="width: 62.7%"></div>
+                        <div class="progress-bar bg-success" id="budget-progress" style="width: 100%"></div>
                     </div>
                 </div>
             </div>
@@ -141,7 +234,7 @@
                 <div class="chart-container h-100">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h5 class="fw-bold mb-0">Spending by Category</h5>
-                        <select class="form-select form-select-sm w-auto" id="categoryChartRange">
+                        <select class="form-select form-select-sm w-auto" id="categoryChartRange" onchange="updateCategoryChart()">
                             <option value="month">This Month</option>
                             <option value="week">This Week</option>
                             <option value="year">This Year</option>
@@ -158,7 +251,7 @@
                 <div class="chart-container h-100">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h5 class="fw-bold mb-0">Monthly Spending Trend</h5>
-                        <select class="form-select form-select-sm w-auto" id="trendChartRange">
+                        <select class="form-select form-select-sm w-auto" id="trendChartRange" onchange="updateTrendChart()">
                             <option value="6">Last 6 Months</option>
                             <option value="12">Last 12 Months</option>
                             <option value="3">Last 3 Months</option>
@@ -178,107 +271,15 @@
                 <div class="chart-container h-100">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h5 class="fw-bold mb-0">Recent Transactions</h5>
-                        <a href="#" class="text-primary text-decoration-none small">View All</a>
+                        <a href="#" class="text-primary text-decoration-none small" onclick="loadAllTransactions()">View All</a>
                     </div>
-                    <div class="recent-transactions">
-                        <div class="recent-transaction p-3 mb-3 bg-white rounded border-start border-primary">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <div class="d-flex align-items-center">
-                                        <div class="bg-primary bg-opacity-10 p-2 rounded me-3">
-                                            <i class="bi bi-tshirt text-primary"></i>
-                                        </div>
-                                        <div>
-                                            <h6 class="mb-1 fw-bold">T-shirt Purchase</h6>
-                                            <small class="text-muted">Clothes • Today, 2:30 PM</small>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="text-end">
-                                    <h6 class="text-danger mb-0 fw-bold">₹400</h6>
-                                    <small class="text-muted">One-time</small>
-                                </div>
+                    <div class="recent-transactions" id="recent-transactions">
+                        <!-- Transactions will be loaded here -->
+                        <div class="text-center py-4">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
                             </div>
-                        </div>
-                        
-                        <div class="recent-transaction p-3 mb-3 bg-white rounded border-start border-success">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <div class="d-flex align-items-center">
-                                        <div class="bg-success bg-opacity-10 p-2 rounded me-3">
-                                            <i class="bi bi-egg-fried text-success"></i>
-                                        </div>
-                                        <div>
-                                            <h6 class="mb-1 fw-bold">Lunch at Restaurant</h6>
-                                            <small class="text-muted">Food • Today, 1:15 PM</small>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="text-end">
-                                    <h6 class="text-danger mb-0 fw-bold">₹650</h6>
-                                    <small class="text-muted">One-time</small>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="recent-transaction p-3 mb-3 bg-white rounded border-start border-warning">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <div class="d-flex align-items-center">
-                                        <div class="bg-warning bg-opacity-10 p-2 rounded me-3">
-                                            <i class="bi bi-car-front text-warning"></i>
-                                        </div>
-                                        <div>
-                                            <h6 class="mb-1 fw-bold">Taxi Ride</h6>
-                                            <small class="text-muted">Transport • Yesterday, 6:45 PM</small>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="text-end">
-                                    <h6 class="text-danger mb-0 fw-bold">₹250</h6>
-                                    <small class="text-muted">One-time</small>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="recent-transaction p-3 mb-3 bg-white rounded border-start border-info">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <div class="d-flex align-items-center">
-                                        <div class="bg-info bg-opacity-10 p-2 rounded me-3">
-                                            <i class="bi bi-lightning-charge text-info"></i>
-                                        </div>
-                                        <div>
-                                            <h6 class="mb-1 fw-bold">Electricity Bill</h6>
-                                            <small class="text-muted">Bills • 2 days ago</small>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="text-end">
-                                    <h6 class="text-danger mb-0 fw-bold">₹1,850</h6>
-                                    <small class="text-muted">Monthly</small>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="recent-transaction p-3 bg-white rounded border-start border-purple">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <div class="d-flex align-items-center">
-                                        <div class="bg-purple bg-opacity-10 p-2 rounded me-3">
-                                            <i class="bi bi-ticket-perforated text-purple"></i>
-                                        </div>
-                                        <div>
-                                            <h6 class="mb-1 fw-bold">Movie Tickets</h6>
-                                            <small class="text-muted">Entertainment • 3 days ago</small>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="text-end">
-                                    <h6 class="text-danger mb-0 fw-bold">₹600</h6>
-                                    <small class="text-muted">One-time</small>
-                                </div>
-                            </div>
+                            <p class="mt-2 text-muted">Loading transactions...</p>
                         </div>
                     </div>
                 </div>
@@ -289,108 +290,16 @@
                 <div class="chart-container h-100">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h5 class="fw-bold mb-0">Category Breakdown</h5>
-                        <span class="text-muted small">This Month</span>
+                        <span class="text-muted small" id="breakdown-period">This Month</span>
                     </div>
                     
-                    <div class="category-breakdown">
-                        <!-- Food Category -->
-                        <div class="mb-4">
-                            <div class="d-flex justify-content-between mb-2">
-                                <div class="d-flex align-items-center">
-                                    <div class="bg-success bg-opacity-10 p-2 rounded me-3">
-                                        <i class="bi bi-egg-fried text-success"></i>
-                                    </div>
-                                    <span class="fw-bold">Food & Dining</span>
-                                </div>
-                                <span class="fw-bold">₹4,250</span>
+                    <div class="category-breakdown" id="category-breakdown">
+                        <!-- Category breakdown will be loaded here -->
+                        <div class="text-center py-4">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
                             </div>
-                            <div class="progress spending-progress">
-                                <div class="progress-bar bg-success" style="width: 34%"></div>
-                            </div>
-                            <div class="d-flex justify-content-between mt-1">
-                                <small class="text-muted">34% of total</small>
-                                <small class="text-muted">12 transactions</small>
-                            </div>
-                        </div>
-                        
-                        <!-- Clothes Category -->
-                        <div class="mb-4">
-                            <div class="d-flex justify-content-between mb-2">
-                                <div class="d-flex align-items-center">
-                                    <div class="bg-primary bg-opacity-10 p-2 rounded me-3">
-                                        <i class="bi bi-tshirt text-primary"></i>
-                                    </div>
-                                    <span class="fw-bold">Clothing</span>
-                                </div>
-                                <span class="fw-bold">₹3,120</span>
-                            </div>
-                            <div class="progress spending-progress">
-                                <div class="progress-bar bg-primary" style="width: 25%"></div>
-                            </div>
-                            <div class="d-flex justify-content-between mt-1">
-                                <small class="text-muted">25% of total</small>
-                                <small class="text-muted">5 transactions</small>
-                            </div>
-                        </div>
-                        
-                        <!-- Transport Category -->
-                        <div class="mb-4">
-                            <div class="d-flex justify-content-between mb-2">
-                                <div class="d-flex align-items-center">
-                                    <div class="bg-warning bg-opacity-10 p-2 rounded me-3">
-                                        <i class="bi bi-car-front text-warning"></i>
-                                    </div>
-                                    <span class="fw-bold">Transport</span>
-                                </div>
-                                <span class="fw-bold">₹2,180</span>
-                            </div>
-                            <div class="progress spending-progress">
-                                <div class="progress-bar bg-warning" style="width: 17%"></div>
-                            </div>
-                            <div class="d-flex justify-content-between mt-1">
-                                <small class="text-muted">17% of total</small>
-                                <small class="text-muted">18 transactions</small>
-                            </div>
-                        </div>
-                        
-                        <!-- Bills Category -->
-                        <div class="mb-4">
-                            <div class="d-flex justify-content-between mb-2">
-                                <div class="d-flex align-items-center">
-                                    <div class="bg-info bg-opacity-10 p-2 rounded me-3">
-                                        <i class="bi bi-lightning-charge text-info"></i>
-                                    </div>
-                                    <span class="fw-bold">Bills & Utilities</span>
-                                </div>
-                                <span class="fw-bold">₹1,850</span>
-                            </div>
-                            <div class="progress spending-progress">
-                                <div class="progress-bar bg-info" style="width: 15%"></div>
-                            </div>
-                            <div class="d-flex justify-content-between mt-1">
-                                <small class="text-muted">15% of total</small>
-                                <small class="text-muted">3 transactions</small>
-                            </div>
-                        </div>
-                        
-                        <!-- Entertainment Category -->
-                        <div class="mb-4">
-                            <div class="d-flex justify-content-between mb-2">
-                                <div class="d-flex align-items-center">
-                                    <div class="bg-purple bg-opacity-10 p-2 rounded me-3">
-                                        <i class="bi bi-ticket-perforated text-purple"></i>
-                                    </div>
-                                    <span class="fw-bold">Entertainment</span>
-                                </div>
-                                <span class="fw-bold">₹1,140</span>
-                            </div>
-                            <div class="progress spending-progress">
-                                <div class="progress-bar bg-purple" style="width: 9%"></div>
-                            </div>
-                            <div class="d-flex justify-content-between mt-1">
-                                <small class="text-muted">9% of total</small>
-                                <small class="text-muted">7 transactions</small>
-                            </div>
+                            <p class="mt-2 text-muted">Loading category data...</p>
                         </div>
                     </div>
                 </div>
@@ -402,26 +311,260 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
-        // Initialize Charts
+        // Configuration
+        const BACKEND_URL = "https://aiexpensetracker-p7ux.onrender.com";
+        let USER_ID = localStorage.getItem('user_id') || 'user_001';
+        
+        // Chart instances
         let categoryChart, trendChart;
         
+        // Current period
+        let currentPeriod = 'month';
+        
+        // Initialize dashboard
         document.addEventListener('DOMContentLoaded', function() {
+            // Check authentication
+            const userId = localStorage.getItem('user_id');
+            if (!userId) {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            USER_ID = userId;
+            
+            // Set username
+            const username = localStorage.getItem('username') || USER_ID;
+            document.getElementById('username').textContent = username;
+            
+            // Load all data
+            loadDashboardData();
+            
+            // Initialize empty charts
+            initializeCharts();
+        });
+        
+        // Check authentication
+        function checkAuth() {
+            const userId = localStorage.getItem('user_id');
+            if (!userId) {
+                window.location.href = 'login.html';
+                return null;
+            }
+            return userId;
+        }
+        
+        // Load dashboard data
+        async function loadDashboardData() {
+            try {
+                // Load expenses
+                const response = await fetch(`${BACKEND_URL}/expenses?user_id=${USER_ID}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                const expenses = data.expenses || [];
+                
+                // Update dashboard with real data
+                updateDashboardStats(expenses);
+                updateRecentTransactions(expenses);
+                updateCategoryBreakdown(expenses);
+                updateCharts(expenses);
+                
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+                showError('Failed to load dashboard data. Please try again.');
+            }
+        }
+        
+        // Update dashboard statistics
+        function updateDashboardStats(expenses) {
+            let total = 0;
+            let transactions = expenses.length;
+            
+            // Calculate totals
+            expenses.forEach(expense => {
+                total += expense[4] || 0; // amount at index 4
+            });
+            
+            // Calculate daily average (for current month)
+            const today = new Date();
+            const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+            const dailyAverage = total / daysInMonth;
+            
+            // Calculate budget remaining
+            const budget = 20000;
+            const budgetRemaining = budget - total;
+            const budgetPercentage = (total / budget) * 100;
+            
+            // Update UI
+            document.getElementById('total-spent').textContent = `₹${total.toFixed(2)}`;
+            document.getElementById('daily-average').textContent = `₹${dailyAverage.toFixed(2)}`;
+            document.getElementById('total-transactions').textContent = transactions;
+            document.getElementById('budget-remaining').textContent = `₹${budgetRemaining.toFixed(2)}`;
+            
+            // Update budget progress bar
+            const progressBar = document.getElementById('budget-progress');
+            const progressPercentage = Math.min(budgetPercentage, 100);
+            progressBar.style.width = `${progressPercentage}%`;
+            
+            // Change color based on budget usage
+            if (progressPercentage > 80) {
+                progressBar.classList.remove('bg-success');
+                progressBar.classList.add('bg-danger');
+            } else if (progressPercentage > 60) {
+                progressBar.classList.remove('bg-success');
+                progressBar.classList.add('bg-warning');
+            } else {
+                progressBar.classList.remove('bg-danger', 'bg-warning');
+                progressBar.classList.add('bg-success');
+            }
+        }
+        
+        // Update recent transactions
+        function updateRecentTransactions(expenses) {
+            const container = document.getElementById('recent-transactions');
+            
+            if (expenses.length === 0) {
+                container.innerHTML = `
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        No transactions yet. Add your first expense in the chat!
+                    </div>
+                `;
+                return;
+            }
+            
+            // Sort by date (newest first)
+            const sortedExpenses = [...expenses].sort((a, b) => {
+                return new Date(b[2]) - new Date(a[2]); // date at index 2
+            }).slice(0, 10); // Show only 10 most recent
+            
+            let html = '';
+            
+            sortedExpenses.forEach(expense => {
+                // expense structure: [id, user_id, date, category, amount, description]
+                const id = expense[0];
+                const date = expense[2];
+                const category = expense[3];
+                const amount = expense[4];
+                const description = expense[5] || 'Expense';
+                
+                // Get category color
+                const categoryColor = getCategoryColor(category);
+                const categoryIcon = getCategoryIcon(category);
+                
+                html += `
+                    <div class="recent-transaction p-3 mb-3 bg-white rounded border-start border-${categoryColor}">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-${categoryColor} bg-opacity-10 p-2 rounded me-3">
+                                        <i class="bi ${categoryIcon} text-${categoryColor}"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-1 fw-bold">${description}</h6>
+                                        <small class="text-muted">${category} • ${formatDate(date)}</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <h6 class="text-danger mb-0 fw-bold">₹${amount.toFixed(2)}</h6>
+                                <small class="text-muted">One-time</small>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        // Update category breakdown
+        function updateCategoryBreakdown(expenses) {
+            const container = document.getElementById('category-breakdown');
+            
+            if (expenses.length === 0) {
+                container.innerHTML = `
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        No category data available yet.
+                    </div>
+                `;
+                return;
+            }
+            
+            // Calculate category totals
+            const categoryTotals = {};
+            expenses.forEach(expense => {
+                const category = expense[3] || 'Other';
+                const amount = expense[4] || 0;
+                
+                if (!categoryTotals[category]) {
+                    categoryTotals[category] = {
+                        total: 0,
+                        count: 0
+                    };
+                }
+                
+                categoryTotals[category].total += amount;
+                categoryTotals[category].count++;
+            });
+            
+            // Calculate overall total
+            let overallTotal = 0;
+            Object.values(categoryTotals).forEach(cat => {
+                overallTotal += cat.total;
+            });
+            
+            // Sort categories by total (highest first)
+            const sortedCategories = Object.entries(categoryTotals)
+                .sort(([, a], [, b]) => b.total - a.total);
+            
+            let html = '';
+            
+            sortedCategories.forEach(([category, data]) => {
+                const percentage = overallTotal > 0 ? (data.total / overallTotal) * 100 : 0;
+                const color = getCategoryColor(category);
+                const icon = getCategoryIcon(category);
+                
+                html += `
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-${color} bg-opacity-10 p-2 rounded me-3">
+                                    <i class="bi ${icon} text-${color}"></i>
+                                </div>
+                                <span class="fw-bold">${category}</span>
+                            </div>
+                            <span class="fw-bold">₹${data.total.toFixed(2)}</span>
+                        </div>
+                        <div class="progress spending-progress">
+                            <div class="progress-bar bg-${color}" style="width: ${percentage}%"></div>
+                        </div>
+                        <div class="d-flex justify-content-between mt-1">
+                            <small class="text-muted">${percentage.toFixed(1)}% of total</small>
+                            <small class="text-muted">${data.count} transaction${data.count !== 1 ? 's' : ''}</small>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        // Initialize charts
+        function initializeCharts() {
             // Category Chart
             const categoryCtx = document.getElementById('categoryChart').getContext('2d');
             categoryChart = new Chart(categoryCtx, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Food & Dining', 'Clothing', 'Transport', 'Bills & Utilities', 'Entertainment', 'Others'],
+                    labels: ['No Data'],
                     datasets: [{
-                        data: [4250, 3120, 2180, 1850, 1140, 0],
-                        backgroundColor: [
-                            '#4cc9f0',
-                            '#4361ee',
-                            '#f8961e',
-                            '#7209b7',
-                            '#f72585',
-                            '#6c757d'
-                        ],
+                        data: [1],
+                        backgroundColor: ['#6c757d'],
                         borderWidth: 0,
                         hoverOffset: 15
                     }]
@@ -441,11 +584,7 @@
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
-                                    let label = context.label || '';
-                                    let value = context.parsed;
-                                    let total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                    let percentage = Math.round((value / total) * 100);
-                                    return `${label}: ₹${value} (${percentage}%)`;
+                                    return `${context.label}: ₹${context.parsed}`;
                                 }
                             }
                         }
@@ -458,10 +597,10 @@
             trendChart = new Chart(trendCtx, {
                 type: 'line',
                 data: {
-                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+                    labels: ['No Data'],
                     datasets: [{
                         label: 'Monthly Spending',
-                        data: [8500, 9200, 10200, 11400, 12540, 11000, 13200],
+                        data: [0],
                         borderColor: '#4361ee',
                         backgroundColor: 'rgba(67, 97, 238, 0.1)',
                         borderWidth: 3,
@@ -511,49 +650,109 @@
                     }
                 }
             });
-            
-            // Add animation to cards
-            const cards = document.querySelectorAll('.fade-in');
-            cards.forEach((card, index) => {
-                card.style.animationDelay = `${index * 0.1}s`;
-            });
-        });
+        }
         
-        // Change period function
+        // Update charts with real data
+        function updateCharts(expenses) {
+            // Update category chart
+            const categoryTotals = {};
+            expenses.forEach(expense => {
+                const category = expense[3] || 'Other';
+                const amount = expense[4] || 0;
+                
+                if (!categoryTotals[category]) {
+                    categoryTotals[category] = 0;
+                }
+                
+                categoryTotals[category] += amount;
+            });
+            
+            const categoryLabels = Object.keys(categoryTotals);
+            const categoryData = Object.values(categoryTotals);
+            const categoryColors = categoryLabels.map(cat => getChartColor(cat));
+            
+            categoryChart.data.labels = categoryLabels;
+            categoryChart.data.datasets[0].data = categoryData;
+            categoryChart.data.datasets[0].backgroundColor = categoryColors;
+            categoryChart.update();
+            
+            // Update trend chart (group by month)
+            const monthlyTotals = {};
+            expenses.forEach(expense => {
+                const date = new Date(expense[2]);
+                const monthYear = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
+                const amount = expense[4] || 0;
+                
+                if (!monthlyTotals[monthYear]) {
+                    monthlyTotals[monthYear] = 0;
+                }
+                
+                monthlyTotals[monthYear] += amount;
+            });
+            
+            // Sort months chronologically
+            const sortedMonths = Object.keys(monthlyTotals).sort();
+            const monthLabels = sortedMonths.map(month => {
+                const [year, monthNum] = month.split('-');
+                const date = new Date(year, monthNum - 1);
+                return date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+            });
+            const monthData = sortedMonths.map(month => monthlyTotals[month]);
+            
+            trendChart.data.labels = monthLabels;
+            trendChart.data.datasets[0].data = monthData;
+            trendChart.update();
+        }
+        
+        // Update category chart based on range
+        function updateCategoryChart() {
+            // This would filter expenses by date range in a real implementation
+            showToast('Category chart range updated');
+        }
+        
+        // Update trend chart based on range
+        function updateTrendChart() {
+            // This would filter expenses by date range in a real implementation
+            showToast('Trend chart range updated');
+        }
+        
+        // Change period
         function changePeriod(period) {
-            const periodBtn = document.getElementById('periodMenu');
-            let periodText = 'This Month';
+            currentPeriod = period;
+            const periodText = document.getElementById('periodText');
             
             switch(period) {
                 case 'week':
-                    periodText = 'This Week';
+                    periodText.textContent = 'This Week';
                     break;
                 case 'month':
-                    periodText = 'This Month';
+                    periodText.textContent = 'This Month';
                     break;
                 case 'year':
-                    periodText = 'This Year';
+                    periodText.textContent = 'This Year';
                     break;
                 case 'all':
-                    periodText = 'All Time';
+                    periodText.textContent = 'All Time';
                     break;
             }
             
-            periodBtn.innerHTML = `<i class="bi bi-calendar-range me-1"></i> ${periodText}`;
+            // Update period labels
+            document.getElementById('total-period').textContent = periodText.textContent;
+            document.getElementById('avg-period').textContent = periodText.textContent;
+            document.getElementById('transactions-period').textContent = periodText.textContent;
+            document.getElementById('breakdown-period').textContent = periodText.textContent;
             
-            // Here you would typically fetch new data based on the selected period
-            // For demo, we'll just update the total spent
-            const totals = {
-                'week': '₹2,340',
-                'month': '₹12,540',
-                'year': '₹1,45,200',
-                'all': '₹3,87,650'
-            };
+            // In a real implementation, you would filter expenses by period
+            showToast(`Showing data for ${periodText.textContent.toLowerCase()}`);
             
-            document.querySelector('.stats-card h3').textContent = totals[period];
-            
-            // Show a toast notification
-            showToast(`Showing data for ${periodText.toLowerCase()}`);
+            // Reload data for the selected period
+            loadDashboardData();
+        }
+        
+        // Load all transactions
+        function loadAllTransactions() {
+            // In a real implementation, this would navigate to a transactions page
+            showToast('View all transactions feature coming soon!');
         }
         
         // Show toast notification
@@ -585,15 +784,116 @@
             }, 3000);
         }
         
-        // Handle chart range changes
-        document.getElementById('categoryChartRange').addEventListener('change', function(e) {
-            const range = e.target.value;
-            showToast(`Category chart updated for ${range === 'month' ? 'this month' : range === 'week' ? 'this week' : 'this year'}`);
-        });
+        // Show error message
+        function showError(message) {
+            const toast = document.createElement('div');
+            toast.className = 'position-fixed top-0 start-50 translate-middle-x mt-3';
+            toast.style.zIndex = '11';
+            toast.innerHTML = `
+                <div class="toast show" role="alert">
+                    <div class="toast-header bg-danger text-white">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <strong class="me-auto">Error</strong>
+                        <button type="button" class="btn-close btn-close-white" onclick="this.parentElement.parentElement.parentElement.remove()"></button>
+                    </div>
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.remove();
+                }
+            }, 5000);
+        }
         
-        document.getElementById('trendChartRange').addEventListener('change', function(e) {
-            const months = e.target.value;
-            showToast(`Trend chart updated for last ${months} months`);
+        // Utility functions
+        function getCategoryColor(category) {
+            const cat = category.toLowerCase();
+            if (cat.includes('food') || cat.includes('dining') || cat.includes('lunch') || cat.includes('dinner') || cat.includes('grocer')) {
+                return 'success';
+            } else if (cat.includes('clothes') || cat.includes('clothing') || cat.includes('shirt') || cat.includes('shopping')) {
+                return 'primary';
+            } else if (cat.includes('transport') || cat.includes('travel') || cat.includes('taxi') || cat.includes('bus') || cat.includes('fuel')) {
+                return 'warning';
+            } else if (cat.includes('bills') || cat.includes('utilities') || cat.includes('electric') || cat.includes('water') || cat.includes('rent')) {
+                return 'info';
+            } else if (cat.includes('entertain') || cat.includes('movie') || cat.includes('game')) {
+                return 'purple';
+            } else {
+                return 'secondary';
+            }
+        }
+        
+        function getCategoryIcon(category) {
+            const cat = category.toLowerCase();
+            if (cat.includes('food') || cat.includes('dining') || cat.includes('lunch') || cat.includes('dinner') || cat.includes('grocer')) {
+                return 'bi-egg-fried';
+            } else if (cat.includes('clothes') || cat.includes('clothing') || cat.includes('shirt') || cat.includes('shopping')) {
+                return 'bi-tshirt';
+            } else if (cat.includes('transport') || cat.includes('travel') || cat.includes('taxi') || cat.includes('bus') || cat.includes('fuel')) {
+                return 'bi-car-front';
+            } else if (cat.includes('bills') || cat.includes('utilities') || cat.includes('electric') || cat.includes('water') || cat.includes('rent')) {
+                return 'bi-lightning-charge';
+            } else if (cat.includes('entertain') || cat.includes('movie') || cat.includes('game')) {
+                return 'bi-ticket-perforated';
+            } else {
+                return 'bi-cash';
+            }
+        }
+        
+        function getChartColor(category) {
+            const cat = category.toLowerCase();
+            if (cat.includes('food') || cat.includes('dining') || cat.includes('lunch') || cat.includes('dinner') || cat.includes('grocer')) {
+                return '#4cc9f0';
+            } else if (cat.includes('clothes') || cat.includes('clothing') || cat.includes('shirt') || cat.includes('shopping')) {
+                return '#4361ee';
+            } else if (cat.includes('transport') || cat.includes('travel') || cat.includes('taxi') || cat.includes('bus') || cat.includes('fuel')) {
+                return '#f8961e';
+            } else if (cat.includes('bills') || cat.includes('utilities') || cat.includes('electric') || cat.includes('water') || cat.includes('rent')) {
+                return '#7209b7';
+            } else if (cat.includes('entertain') || cat.includes('movie') || cat.includes('game')) {
+                return '#f72585';
+            } else {
+                return '#6c757d';
+            }
+        }
+        
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffTime = Math.abs(now - date);
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (diffDays === 0) return 'Today';
+            if (diffDays === 1) return 'Yesterday';
+            if (diffDays < 7) return `${diffDays} days ago`;
+            
+            return date.toLocaleDateString('en-IN', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric'
+            });
+        }
+        
+        function logout() {
+            // Clear user data
+            localStorage.removeItem('user_id');
+            localStorage.removeItem('username');
+            localStorage.removeItem('user_email');
+            
+            alert('Logged out successfully!');
+            window.location.href = 'login.html';
+        }
+        
+        // Add animation to cards
+        const cards = document.querySelectorAll('.fade-in');
+        cards.forEach((card, index) => {
+            card.style.animationDelay = `${index * 0.1}s`;
         });
     </script>
 </body>
