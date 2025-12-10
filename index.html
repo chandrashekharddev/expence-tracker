@@ -25,15 +25,20 @@
             background-color: #f8f9fa;
             height: 100vh;
             overflow: hidden;
+            margin: 0;
+            padding: 0;
         }
         
         .main-container {
             height: calc(100vh - 72px);
+            margin: 0;
+            padding: 0;
         }
         
         .navbar {
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             height: 72px;
+            flex-shrink: 0;
         }
         
         .sidebar {
@@ -41,6 +46,8 @@
             height: 100%;
             overflow-y: auto;
             border-right: 1px solid #eaeaea;
+            display: flex;
+            flex-direction: column;
         }
         
         .chat-container {
@@ -55,6 +62,7 @@
             overflow-y: auto;
             padding: 20px;
             background: linear-gradient(to bottom, #ffffff, #f8fafc);
+            min-height: 0; /* Important for flex scrolling */
         }
         
         .chat-input-container {
@@ -62,6 +70,7 @@
             background: white;
             border-top: 1px solid #eaeaea;
             box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+            flex-shrink: 0;
         }
         
         .chat-input {
@@ -70,6 +79,8 @@
             resize: none;
             padding: 12px 15px;
             font-size: 0.95rem;
+            min-height: 50px;
+            max-height: 150px;
         }
         
         .chat-input:focus {
@@ -83,6 +94,8 @@
             border-radius: 12px;
             padding: 12px 24px;
             transition: all 0.3s;
+            height: 50px;
+            align-self: flex-end;
         }
         
         .send-btn:hover {
@@ -100,6 +113,8 @@
             margin-left: auto;
             border: 1px solid #e2e8f0;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            word-wrap: break-word;
+            overflow-wrap: break-word;
         }
         
         .ai-message {
@@ -111,6 +126,8 @@
             margin-right: auto;
             border-left: 4px solid var(--primary-color);
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            word-wrap: break-word;
+            overflow-wrap: break-word;
         }
         
         .date-header {
@@ -148,6 +165,7 @@
             align-items: center;
             justify-content: center;
             margin-right: 12px;
+            flex-shrink: 0;
         }
         
         .expense-category {
@@ -259,29 +277,70 @@
             pointer-events: none;
         }
         
-        /* Scrollbar styling */
-        .chat-history::-webkit-scrollbar,
+        /* Custom Scrollbar Styling */
+        .chat-history::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .chat-history::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        .chat-history::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 10px;
+        }
+        
+        .chat-history::-webkit-scrollbar-thumb:hover {
+            background: #a1a1a1;
+        }
+        
         .sidebar::-webkit-scrollbar {
             width: 6px;
         }
         
-        .chat-history::-webkit-scrollbar-track,
         .sidebar::-webkit-scrollbar-track {
             background: #f1f1f1;
             border-radius: 10px;
         }
         
-        .chat-history::-webkit-scrollbar-thumb,
         .sidebar::-webkit-scrollbar-thumb {
             background: #c1c1c1;
             border-radius: 10px;
         }
         
-        .chat-history::-webkit-scrollbar-thumb:hover,
         .sidebar::-webkit-scrollbar-thumb:hover {
             background: #a1a1a1;
         }
         
+        /* Firefox scrollbar */
+        .chat-history {
+            scrollbar-width: thin;
+            scrollbar-color: #c1c1c1 #f1f1f1;
+        }
+        
+        .sidebar {
+            scrollbar-width: thin;
+            scrollbar-color: #c1c1c1 #f1f1f1;
+        }
+        
+        /* Ensure proper layout */
+        .row.h-100 {
+            margin: 0;
+            height: 100%;
+        }
+        
+        .col-lg-4, .col-lg-8, .col-md-5, .col-md-7 {
+            padding: 0;
+            height: 100%;
+        }
+        
+        .p-0 {
+            height: 100%;
+        }
+        
+        /* Responsive adjustments */
         @media (max-width: 768px) {
             .main-container {
                 height: auto;
@@ -290,11 +349,51 @@
             
             .sidebar, .chat-container {
                 height: 50vh;
+                min-height: 300px;
             }
             
             .user-message, .ai-message {
                 max-width: 85%;
             }
+            
+            .chat-history {
+                padding: 15px;
+            }
+            
+            .chat-input-container {
+                padding: 15px;
+            }
+        }
+        
+        /* Input group styling */
+        .input-group {
+            display: flex;
+            align-items: flex-end;
+        }
+        
+        .input-group .form-control {
+            flex: 1;
+        }
+        
+        /* Message content styling */
+        .ai-message p, .user-message p {
+            margin-bottom: 0;
+            line-height: 1.5;
+        }
+        
+        /* Alert styling inside messages */
+        .ai-message .alert {
+            margin-top: 10px;
+            margin-bottom: 0;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 0.9rem;
+        }
+        
+        /* Ensure chat scrolls to bottom on new messages */
+        .chat-history {
+            display: flex;
+            flex-direction: column;
         }
     </style>
 </head>
@@ -461,6 +560,11 @@
             
             // Test backend connection
             testBackendConnection();
+            
+            // Focus on input field
+            setTimeout(() => {
+                expenseInput.focus();
+            }, 500);
         });
         
         // Show welcome message
@@ -489,6 +593,14 @@
             `;
             
             chatHistory.innerHTML = welcomeMessage;
+            scrollToBottom();
+        }
+        
+        // Scroll chat to bottom
+        function scrollToBottom() {
+            setTimeout(() => {
+                chatHistory.scrollTop = chatHistory.scrollHeight;
+            }, 100);
         }
         
         // Load expenses from backend
@@ -746,10 +858,7 @@
                 });
             });
             
-            // Scroll to bottom
-            setTimeout(() => {
-                chatHistory.scrollTop = chatHistory.scrollHeight;
-            }, 100);
+            scrollToBottom();
         }
         
         // Send expense message to backend - FIXED FOR 422 ERROR
@@ -833,6 +942,7 @@
                 sendButton.disabled = false;
                 expenseInput.classList.remove('loading');
                 expenseInput.focus();
+                scrollToBottom();
             }
         }
         
@@ -857,7 +967,7 @@
             `;
             
             chatHistory.appendChild(messageDiv);
-            chatHistory.scrollTop = chatHistory.scrollHeight;
+            scrollToBottom();
         }
         
         // Add AI message to chat
@@ -881,7 +991,7 @@
             `;
             
             chatHistory.appendChild(messageDiv);
-            chatHistory.scrollTop = chatHistory.scrollHeight;
+            scrollToBottom();
         }
         
         // Test backend connection
@@ -991,12 +1101,23 @@
         // Auto-resize textarea
         expenseInput.addEventListener('input', function() {
             this.style.height = 'auto';
-            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+            const newHeight = Math.min(this.scrollHeight, 150);
+            this.style.height = newHeight + 'px';
+            
+            // Adjust chat history height when textarea expands
+            const chatContainer = document.querySelector('.chat-container');
+            const inputHeight = this.offsetHeight + 40; // 40px for padding/margins
+            chatHistory.style.maxHeight = `calc(100% - ${inputHeight}px)`;
         });
         
         // Initialize textarea height
         expenseInput.style.height = 'auto';
         expenseInput.style.height = expenseInput.scrollHeight + 'px';
+        
+        // Auto-scroll to bottom when page loads
+        setTimeout(() => {
+            scrollToBottom();
+        }, 300);
     </script>
 </body>
 </html>
