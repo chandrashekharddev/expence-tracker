@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Expense Tracker</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Animate.css for animations -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3a0ca3;
+            --success-color: #4cc9f0;
+            --warning-color: #f8961e;
+            --danger-color: #f72585;
+            --info-color: #7209b7;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .main-container {
+            height: calc(100vh - 72px);
+        }
+        
+        .navbar {
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            height: 72px;
+        }
+        
+        .sidebar {
+            background: white;
+            height: 100%;
+            overflow-y: auto;
+            border-right: 1px solid #eaeaea;
+        }
+        
+        .chat-container {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background: #f8fafc;
+        }
+        
+        .chat-history {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: linear-gradient(to bottom, #ffffff, #f8fafc);
+        }
+        
+        .chat-input-container {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #eaeaea;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .chat-input {
+            border-radius: 12px;
+            border: 2px solid #e2e8f0;
+            resize: none;
+            padding: 12px 15px;
+            font-size: 0.95rem;
+        }
+        
+        .chat-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+        }
+        
+        .send-btn {
+            background: var(--primary-color);
+            color: white;
+            border-radius: 12px;
+            padding: 12px 24px;
+            transition: all 0.3s;
+        }
+        
+        .send-btn:hover {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.2);
+        }
+        
+        .user-message {
+            background: white;
+            border-radius: 15px;
+            padding: 15px 20px;
+            margin-bottom: 15px;
+            max-width: 75%;
+            margin-left: auto;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .ai-message {
+            background: white;
+            border-radius: 15px;
+            padding: 15px 20px;
+            margin-bottom: 15px;
+            max-width: 75%;
+            margin-right: auto;
+            border-left: 4px solid var(--primary-color);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .date-header {
+            text-align: center;
+            color: #718096;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin: 20px 0;
+            position: relative;
+        }
+        
+        .date-header:before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            width: 100%;
+            height: 1px;
+            background: #e2e8f0;
+            z-index: 1;
+        }
+        
+        .date-header span {
+            background: #f8fafc;
+            padding: 0 15px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .category-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+        }
+        
+        .expense-category {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .category-clothes {
+            background: rgba(67, 97, 238, 0.1);
+            color: #4361ee;
+            border: 1px solid rgba(67, 97, 238, 0.2);
+        }
+        
+        .category-food {
+            background: rgba(76, 201, 240, 0.1);
+            color: #4cc9f0;
+            border: 1px solid rgba(76, 201, 240, 0.2);
+        }
+        
+        .category-transport {
+            background: rgba(248, 150, 30, 0.1);
+            color: #f8961e;
+            border: 1px solid rgba(248, 150, 30, 0.2);
+        }
+        
+        .category-bills {
+            background: rgba(114, 9, 183, 0.1);
+            color: #7209b7;
+            border: 1px solid rgba(114, 9, 183, 0.2);
+        }
+        
+        .category-entertainment {
+            background: rgba(247, 37, 133, 0.1);
+            color: #f72585;
+            border: 1px solid rgba(247, 37, 133, 0.2);
+        }
+        
+        .expense-item {
+            background: white;
+            border-radius: 10px;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #4361ee;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+        }
+        
+        .expense-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        
+        .stats-card {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            height: 100%;
+        }
+        
+        .stats-card.clothes {
+            border-top: 4px solid #4361ee;
+        }
+        
+        .stats-card.food {
+            border-top: 4px solid #4cc9f0;
+        }
+        
+        .stats-card.other {
+            border-top: 4px solid #f8961e;
+        }
+        
+        .stats-card.total {
+            border-top: 4px solid #7209b7;
+            background: linear-gradient(135deg, #f8fafc, #ffffff);
+        }
+        
+        .stats-card h6 {
+            font-size: 0.9rem;
+            color: #4a5568;
+            margin-bottom: 8px;
+        }
+        
+        .stats-card h4 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+        
+        .progress {
+            height: 6px;
+            border-radius: 3px;
+            background-color: #e2e8f0;
+        }
+        
+        .progress-bar {
+            background-color: var(--primary-color);
+            border-radius: 3px;
+        }
+        
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        
+        /* Scrollbar styling */
+        .chat-history::-webkit-scrollbar,
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .chat-history::-webkit-scrollbar-track,
+        .sidebar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        .chat-history::-webkit-scrollbar-thumb,
+        .sidebar::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 10px;
+        }
+        
+        .chat-history::-webkit-scrollbar-thumb:hover,
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: #a1a1a1;
+        }
+        
+        @media (max-width: 768px) {
+            .main-container {
+                height: auto;
+                min-height: calc(100vh - 72px);
+            }
+            
+            .sidebar, .chat-container {
+                height: 50vh;
+            }
+            
+            .user-message, .ai-message {
+                max-width: 85%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+        <div class="container-fluid">
+            <a class="navbar-brand fw-bold text-primary" href="index.html">
+                <i class="fas fa-wallet me-2"></i>ExpenseTracker AI
+            </a>
+            <div class="d-flex align-items-center">
+                <span class="me-3 d-none d-md-block">Total Spent: <strong id="total-spent">₹0</strong></span>
+                <div class="dropdown">
+                    <button class="btn btn-outline-primary dropdown-toggle" type="button" id="userMenu" data-bs-toggle="dropdown">
+                        <i class="fas fa-user me-1"></i> <span id="username">User</span>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="dashboard.html"><i class="fas fa-chart-pie me-2"></i>Dashboard</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="login.html"><i class="fas fa-sign-in-alt me-2"></i>Login</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="logout()"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container-fluid main-container">
+        <div class="row h-100">
+            <!-- Sidebar with Expense History & Categories -->
+            <div class="col-lg-4 col-md-5 p-0">
+                <div class="sidebar p-3">
+                    <h5 class="mb-3"><i class="fas fa-history me-2"></i>Recent Expenses</h5>
+                    <div id="recent-expenses">
+                        <div class="text-center py-4">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-2 text-muted">Loading expenses...</p>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <h5 class="mb-3"><i class="fas fa-chart-pie me-2"></i>Spending by Category</h5>
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <div class="stats-card clothes">
+                                <h6><i class="fas fa-tshirt me-2"></i>Clothes</h6>
+                                <h4 id="clothes-total">₹0</h4>
+                                <div class="progress">
+                                    <div class="progress-bar" id="clothes-progress" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="stats-card food">
+                                <h6><i class="fas fa-utensils me-2"></i>Food</h6>
+                                <h4 id="food-total">₹0</h4>
+                                <div class="progress">
+                                    <div class="progress-bar" id="food-progress" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="stats-card other">
+                                <h6><i class="fas fa-car me-2"></i>Transport</h6>
+                                <h4 id="transport-total">₹0</h4>
+                                <div class="progress">
+                                    <div class="progress-bar" id="transport-progress" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="stats-card total">
+                                <h6><i class="fas fa-wallet me-2"></i>Total</h6>
+                                <h4 id="overall-total">₹0</h4>
+                                <small class="text-muted">This month</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Chat Interface -->
+            <div class="col-lg-8 col-md-7 p-0">
+                <div class="chat-container">
+                    <!-- Chat History -->
+                    <div class="chat-history" id="chat-history">
+                        <!-- Messages will be populated here -->
+                    </div>
+                    
+                    <!-- Chat Input -->
+                    <div class="chat-input-container">
+                        <div class="input-group">
+                            <textarea class="form-control chat-input" id="expense-input" rows="1" placeholder="Enter your expense in natural language, e.g., 'Today I bought a t-shirt for ₹400'..."></textarea>
+                            <button class="btn send-btn ms-2" id="send-btn" type="button">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                        <div class="mt-2 d-flex justify-content-between">
+                            <small class="text-muted">Press Enter to send, Shift+Enter for new line</small>
+                            <small class="text-muted"><i class="fas fa-lightbulb me-1"></i>Try: "Spent ₹120 on groceries"</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Configuration - FIXED URL
+        const BACKEND_URL = "https://aiexpensetracker-p7ux.onrender.com";
+        
+        // Get user_id from localStorage or use default
+        let USER_ID = localStorage.getItem('user_id') || 'user_001';
+        
+        // DOM Elements
+        const expenseInput = document.getElementById('expense-input');
+        const sendButton = document.getElementById('send-btn');
+        const chatHistory = document.getElementById('chat-history');
+        const recentExpenses = document.getElementById('recent-expenses');
+        
+        // Stats elements
+        const clothesTotal = document.getElementById('clothes-total');
+        const foodTotal = document.getElementById('food-total');
+        const transportTotal = document.getElementById('transport-total');
+        const overallTotal = document.getElementById('overall-total');
+        const totalSpent = document.getElementById('total-spent');
+        
+        // Initialize the UI
+        document.addEventListener('DOMContentLoaded', function() {
+            showWelcomeMessage();
+            loadExpenses();
+            loadChatHistory();
+            
+            // Set username display
+            document.getElementById('username').textContent = USER_ID;
+        });
+        
+        // Show welcome message
+        function showWelcomeMessage() {
+            const welcomeMessage = `
+                <div class="date-header">Today</div>
+                <div class="ai-message animate__animated animate__fadeIn">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="category-icon bg-primary text-white">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div>
+                            <strong>ExpenseTracker AI</strong>
+                            <div class="text-muted" style="font-size: 0.8rem;">Just now</div>
+                        </div>
+                    </div>
+                    <p>Hello! I'm your AI expense tracker. Tell me about your expenses in natural language, like <em>"Today I bought a t-shirt for ₹400"</em> or <em>"Spent ₹250 on lunch"</em>, and I'll categorize and record them for you.</p>
+                    <div class="mt-2">
+                        <span class="expense-category category-clothes">Clothes</span>
+                        <span class="expense-category category-food">Food</span>
+                        <span class="expense-category category-transport">Transport</span>
+                        <span class="expense-category category-bills">Bills</span>
+                        <span class="expense-category category-entertainment">Entertainment</span>
+                    </div>
+                </div>
+            `;
+            
+            chatHistory.innerHTML = welcomeMessage;
+        }
+        
+        // Load expenses from backend
+        async function loadExpenses() {
+            try {
+                console.log('Fetching expenses from:', `${BACKEND_URL}/expenses?user_id=${USER_ID}`);
+                
+                const response = await fetch(`${BACKEND_URL}/expenses?user_id=${USER_ID}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('Expenses data received:', data);
+                
+                const expenses = data.expenses || [];
+                
+                if (expenses.length === 0) {
+                    updateEmptyState();
+                } else {
+                    updateExpensesUI(expenses);
+                    updateCategoryTotals(expenses);
+                    updateRecentExpenses(expenses);
+                }
+            } catch (error) {
+                console.error('Error loading expenses:', error);
+                showErrorState(error.message);
+            }
+        }
+        
+        // Update empty state
+        function updateEmptyState() {
+            recentExpenses.innerHTML = `
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    No expenses recorded yet. Start by adding one via chat!
+                </div>
+            `;
+            
+            clothesTotal.textContent = '₹0';
+            foodTotal.textContent = '₹0';
+            transportTotal.textContent = '₹0';
+            overallTotal.textContent = '₹0';
+            totalSpent.textContent = '₹0';
+        }
+        
+        // Show error state
+        function showErrorState(errorMsg) {
+            recentExpenses.innerHTML = `
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Connection Error</strong><br>
+                    ${errorMsg}<br>
+                    <small>Make sure the backend is running at ${BACKEND_URL}</small>
+                    <br><br>
+                    <button class="btn btn-sm btn-primary" onclick="testBackendConnection()">
+                        <i class="fas fa-sync-alt me-1"></i> Retry Connection
+                    </button>
+                </div>
+            `;
+        }
+        
+        // Update expenses UI
+        function updateExpensesUI(expenses) {
+            let total = 0;
+            expenses.forEach(expense => {
+                // expense structure: [id, user_id, date, category, amount, description]
+                const amount = expense[4] || 0;
+                total += amount;
+            });
+            
+            overallTotal.textContent = `₹${total.toFixed(2)}`;
+            totalSpent.textContent = `₹${total.toFixed(2)}`;
+        }
+        
+        // Update category totals
+        function updateCategoryTotals(expenses) {
+            const categoryTotals = {
+                "Clothes": 0,
+                "Food": 0,
+                "Transport": 0,
+                "Bills": 0,
+                "Entertainment": 0,
+                "Other": 0
+            };
+            
+            expenses.forEach(expense => {
+                // expense structure: [id, user_id, date, category, amount, description]
+                const category = (expense[3] || "Other").trim();
+                const amount = expense[4] || 0;
+                
+                // Normalize category names
+                const normalizedCategory = normalizeCategory(category);
+                
+                if (categoryTotals.hasOwnProperty(normalizedCategory)) {
+                    categoryTotals[normalizedCategory] += amount;
+                } else {
+                    categoryTotals["Other"] += amount;
+                }
+            });
+            
+            // Calculate total for percentages
+            let total = 0;
+            for (const category in categoryTotals) {
+                total += categoryTotals[category];
+            }
+            
+            // Update UI
+            clothesTotal.textContent = `₹${categoryTotals["Clothes"].toFixed(2)}`;
+            foodTotal.textContent = `₹${categoryTotals["Food"].toFixed(2)}`;
+            transportTotal.textContent = `₹${categoryTotals["Transport"].toFixed(2)}`;
+            
+            // Update progress bars
+            if (total > 0) {
+                const clothesPercent = (categoryTotals["Clothes"] / total) * 100;
+                const foodPercent = (categoryTotals["Food"] / total) * 100;
+                const transportPercent = (categoryTotals["Transport"] / total) * 100;
+                
+                document.getElementById('clothes-progress').style.width = `${clothesPercent}%`;
+                document.getElementById('food-progress').style.width = `${foodPercent}%`;
+                document.getElementById('transport-progress').style.width = `${transportPercent}%`;
+            }
+        }
+        
+        // Normalize category names
+        function normalizeCategory(category) {
+            const lowerCategory = category.toLowerCase();
+            
+            if (lowerCategory.includes('clothes') || lowerCategory.includes('clothing') || lowerCategory.includes('shirt') || lowerCategory.includes('shopping')) {
+                return "Clothes";
+            } else if (lowerCategory.includes('food') || lowerCategory.includes('dining') || lowerCategory.includes('lunch') || lowerCategory.includes('dinner') || lowerCategory.includes('grocer')) {
+                return "Food";
+            } else if (lowerCategory.includes('transport') || lowerCategory.includes('travel') || lowerCategory.includes('taxi') || lowerCategory.includes('bus') || lowerCategory.includes('fuel')) {
+                return "Transport";
+            } else if (lowerCategory.includes('bills') || lowerCategory.includes('utilities') || lowerCategory.includes('electric') || lowerCategory.includes('water') || lowerCategory.includes('rent')) {
+                return "Bills";
+            } else if (lowerCategory.includes('entertain') || lowerCategory.includes('movie') || lowerCategory.includes('game')) {
+                return "Entertainment";
+            } else {
+                return "Other";
+            }
+        }
+        
+        // Update recent expenses list
+        function updateRecentExpenses(expenses) {
+            recentExpenses.innerHTML = '';
+            
+            // Sort by date (newest first)
+            const sortedExpenses = [...expenses].sort((a, b) => {
+                return new Date(b[2]) - new Date(a[2]); // date is at index 2
+            }).slice(0, 5);
+            
+            if (sortedExpenses.length === 0) {
+                recentExpenses.innerHTML = `
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        No expenses recorded yet.
+                    </div>
+                `;
+                return;
+            }
+            
+            sortedExpenses.forEach(expense => {
+                // expense structure: [id, user_id, date, category, amount, description]
+                const category = expense[3] || "Other";
+                const description = expense[5] || "Expense";
+                const amount = expense[4] || 0;
+                const date = expense[2] || new Date().toISOString().split('T')[0];
+                
+                const categoryClass = getCategoryClass(category);
+                
+                const expenseItem = document.createElement('div');
+                expenseItem.className = 'expense-item animate__animated animate__fadeIn';
+                expenseItem.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <span class="badge ${categoryClass} mb-1">${category}</span>
+                            <h6 class="mb-1 fw-bold">${description}</h6>
+                            <small class="text-muted">${formatDate(date)}</small>
+                        </div>
+                        <div class="text-end">
+                            <h6 class="text-danger mb-0 fw-bold">₹${amount.toFixed(2)}</h6>
+                        </div>
+                    </div>
+                `;
+                
+                recentExpenses.appendChild(expenseItem);
+            });
+        }
+        
+        // Load chat history from backend
+        async function loadChatHistory() {
+            try {
+                console.log('Fetching chat history from:', `${BACKEND_URL}/memory/${USER_ID}`);
+                
+                const response = await fetch(`${BACKEND_URL}/memory/${USER_ID}`);
+                if (!response.ok) {
+                    console.log('No chat history found or error loading');
+                    return;
+                }
+                
+                const data = await response.json();
+                const memories = data.memories || [];
+                console.log('Chat history received:', memories);
+                
+                displayChatHistory(memories);
+            } catch (error) {
+                console.error('Error loading chat history:', error);
+            }
+        }
+        
+        // Display chat history
+        function displayChatHistory(memories) {
+            if (memories.length === 0) return;
+            
+            // Group memories by date
+            const memoriesByDate = {};
+            memories.forEach(memory => {
+                // memory structure: [id, user_id, role, memory_text, timestamp]
+                const date = memory[4] ? memory[4].split('T')[0] : new Date().toISOString().split('T')[0];
+                if (!memoriesByDate[date]) {
+                    memoriesByDate[date] = [];
+                }
+                memoriesByDate[date].push(memory);
+            });
+            
+            // Display memories in reverse chronological order
+            const dates = Object.keys(memoriesByDate).sort((a, b) => new Date(b) - new Date(a));
+            
+            dates.forEach(date => {
+                const isToday = date === new Date().toISOString().split('T')[0];
+                const dateHeader = isToday ? 'Today' : formatDate(date);
+                
+                // Add date header if not today (today already has header)
+                if (!isToday) {
+                    const headerDiv = document.createElement('div');
+                    headerDiv.className = 'date-header';
+                    headerDiv.textContent = dateHeader;
+                    chatHistory.appendChild(headerDiv);
+                }
+                
+                // Add messages for this date
+                memoriesByDate[date].forEach(memory => {
+                    const role = memory[2]; // 'user' or 'assistant'
+                    const content = memory[3]; // message content
+                    const timestamp = memory[4]; // timestamp
+                    
+                    if (role === 'user') {
+                        addUserMessage(content, timestamp);
+                    } else {
+                        addAIMessage(content, timestamp);
+                    }
+                });
+            });
+            
+            // Scroll to bottom
+            setTimeout(() => {
+                chatHistory.scrollTop = chatHistory.scrollHeight;
+            }, 100);
+        }
+        
+        // Send expense message to backend
+        async function sendExpenseMessage() {
+            const text = expenseInput.value.trim();
+            if (!text) return;
+            
+            // Disable input during processing
+            expenseInput.disabled = true;
+            sendButton.disabled = true;
+            expenseInput.classList.add('loading');
+            
+            // Add user message to chat
+            addUserMessage(text);
+            
+            // Clear input
+            expenseInput.value = '';
+            
+            try {
+                console.log('Sending message to chatbot:', text);
+                
+                // Send to backend
+                const response = await fetch(`${BACKEND_URL}/chatbot/${USER_ID}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        'user_input': text
+                    })
+                });
+                
+                console.log('Chatbot response status:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('Chatbot response data:', data);
+                
+                // Add AI response
+                addAIMessage(data.response || "Expense processed successfully!");
+                
+                // Reload expenses to update sidebar
+                await loadExpenses();
+                
+            } catch (error) {
+                console.error('Error sending message:', error);
+                addAIMessage(`Sorry, I encountered an error: ${error.message}. Please try again.`);
+            } finally {
+                // Re-enable input
+                expenseInput.disabled = false;
+                sendButton.disabled = false;
+                expenseInput.classList.remove('loading');
+                expenseInput.focus();
+            }
+        }
+        
+        // Add user message to chat
+        function addUserMessage(text, timestamp = null) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'user-message animate__animated animate__fadeIn';
+            
+            const time = timestamp ? formatTime(timestamp) : 'Just now';
+            
+            messageDiv.innerHTML = `
+                <div class="d-flex align-items-center mb-2">
+                    <div class="category-icon bg-success text-white">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div>
+                        <strong>You</strong>
+                        <div class="text-muted" style="font-size: 0.8rem;">${time}</div>
+                    </div>
+                </div>
+                <p class="mb-0">${escapeHtml(text)}</p>
+            `;
+            
+            chatHistory.appendChild(messageDiv);
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+        
+        // Add AI message to chat
+        function addAIMessage(text, timestamp = null) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'ai-message animate__animated animate__fadeIn';
+            
+            const time = timestamp ? formatTime(timestamp) : 'Just now';
+            
+            messageDiv.innerHTML = `
+                <div class="d-flex align-items-center mb-2">
+                    <div class="category-icon bg-primary text-white">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div>
+                        <strong>ExpenseTracker AI</strong>
+                        <div class="text-muted" style="font-size: 0.8rem;">${time}</div>
+                    </div>
+                </div>
+                <p class="mb-0">${escapeHtml(text)}</p>
+            `;
+            
+            chatHistory.appendChild(messageDiv);
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+        
+        // Utility functions
+        function getCategoryClass(category) {
+            const normalized = normalizeCategory(category);
+            switch(normalized) {
+                case 'Clothes': return 'bg-primary';
+                case 'Food': return 'bg-success';
+                case 'Transport': return 'bg-warning';
+                case 'Bills': return 'bg-info';
+                case 'Entertainment': return 'bg-purple';
+                default: return 'bg-secondary';
+            }
+        }
+        
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffTime = Math.abs(now - date);
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (diffDays === 0) return 'Today';
+            if (diffDays === 1) return 'Yesterday';
+            if (diffDays < 7) return `${diffDays} days ago`;
+            
+            return date.toLocaleDateString('en-IN', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric'
+            });
+        }
+        
+        function formatTime(dateTimeString) {
+            const date = new Date(dateTimeString);
+            return date.toLocaleTimeString('en-IN', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        function logout() {
+            // Clear user data
+            localStorage.removeItem('user_id');
+            alert('Logged out successfully!');
+            window.location.href = 'login.html';
+        }
+        
+        // Test backend connection
+        async function testBackendConnection() {
+            try {
+                console.log('Testing connection to:', BACKEND_URL);
+                const response = await fetch(`${BACKEND_URL}/`);
+                if (response.ok) {
+                    console.log('Backend connection successful');
+                    // Reload data if connection is successful
+                    loadExpenses();
+                    loadChatHistory();
+                    
+                    // Show success message
+                    const successAlert = document.createElement('div');
+                    successAlert.className = 'alert alert-success alert-dismissible fade show';
+                    successAlert.innerHTML = `
+                        <i class="fas fa-check-circle me-2"></i>
+                        Connected to backend successfully!
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    `;
+                    recentExpenses.parentNode.insertBefore(successAlert, recentExpenses);
+                } else {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+            } catch (error) {
+                console.error('Backend connection test failed:', error);
+                alert(`Cannot connect to backend: ${error.message}\n\nPlease ensure:\n1. Your backend is running at ${BACKEND_URL}\n2. CORS is enabled on the backend\n3. The URL is correct`);
+            }
+        }
+        
+        // Event Listeners
+        sendButton.addEventListener('click', sendExpenseMessage);
+        
+        expenseInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendExpenseMessage();
+            }
+        });
+        
+        // Auto-resize textarea
+        expenseInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+        });
+        
+        // Initialize textarea height
+        expenseInput.style.height = 'auto';
+        expenseInput.style.height = expenseInput.scrollHeight + 'px';
+        
+        // Test backend connection on load
+        testBackendConnection();
+    </script>
+</body>
+</html>
