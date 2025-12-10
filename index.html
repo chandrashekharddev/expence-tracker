@@ -410,8 +410,9 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
-        // Configuration - FIXED URL
+        // Configuration with CORS proxy
         const BACKEND_URL = "https://aiexpensetracker-p7ux.onrender.com";
+        const CORS_PROXY = "https://api.allorigins.win/get?url=";
         
         // Get user_id from localStorage or use default
         let USER_ID = localStorage.getItem('user_id') || 'user_001';
@@ -429,14 +430,88 @@
         const overallTotal = document.getElementById('overall-total');
         const totalSpent = document.getElementById('total-spent');
         
+        // ========================
+        // Authentication Check
+        // ========================
+        
+        function checkAuth() {
+            const userId = localStorage.getItem('user_id');
+            if (!userId) {
+                window.location.href = 'login.html';
+                return null;
+            }
+            return userId;
+        }
+        
+        // ========================
+        // CORS Proxy Helpers
+        // ========================
+        
+        // Helper function to make CORS-proxied requests
+        async function fetchWithProxy(endpoint) {
+            const proxiedUrl = `${CORS_PROXY}${encodeURIComponent(BACKEND_URL + endpoint)}`;
+            
+            try {
+                const response = await fetch(proxiedUrl);
+                const data = await response.json();
+                
+                if (data.contents) {
+                    // Parse the JSON from the contents
+                    return JSON.parse(data.contents);
+                } else {
+                    throw new Error('No content in proxy response');
+                }
+            } catch (error) {
+                console.error('Proxy fetch error:', error);
+                throw error;
+            }
+        }
+        
+        // Helper for POST requests
+        async function postWithProxy(endpoint, body) {
+            const proxiedUrl = `${CORS_PROXY}${encodeURIComponent(BACKEND_URL + endpoint)}`;
+            
+            try {
+                const response = await fetch(proxiedUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams(body)
+                });
+                
+                const data = await response.json();
+                
+                if (data.contents) {
+                    return JSON.parse(data.contents);
+                } else {
+                    throw new Error('No content in proxy response');
+                }
+            } catch (error) {
+                console.error('Proxy POST error:', error);
+                throw error;
+            }
+        }
+        
+        // ========================
+        // Main Functions
+        // ========================
+        
         // Initialize the UI
         document.addEventListener('DOMContentLoaded', function() {
+            USER_ID = checkAuth();
+            if (!USER_ID) return;
+            
+            // Set username display
+            const username = localStorage.getItem('username') || USER_ID;
+            document.getElementById('username').textContent = username;
+            
             showWelcomeMessage();
             loadExpenses();
             loadChatHistory();
             
-            // Set username display
-            document.getElementById('username').textContent = USER_ID;
+            // Test backend connection
+            testBackendConnection();
         });
         
         // Show welcome message
@@ -470,16 +545,11 @@
         // Load expenses from backend
         async function loadExpenses() {
             try {
-                console.log('Fetching expenses from:', `${BACKEND_URL}/expenses?user_id=${USER_ID}`);
+                console.log('Fetching expenses via proxy...');
                 
-                const response = await fetch(`${BACKEND_URL}/expenses?user_id=${USER_ID}`);
+                const data = await fetchWithProxy(`/expenses?user_id=${USER_ID}`);
                 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-                
-                const data = await response.json();
-                console.log('Expenses data received:', data);
+                console.log('Expenses data received via proxy:', data);
                 
                 const expenses = data.expenses || [];
                 
@@ -519,7 +589,7 @@
                     <i class="fas fa-exclamation-triangle me-2"></i>
                     <strong>Connection Error</strong><br>
                     ${errorMsg}<br>
-                    <small>Make sure the backend is running at ${BACKEND_URL}</small>
+                    <small>Using CORS proxy: ${CORS_PROXY}</small>
                     <br><br>
                     <button class="btn btn-sm btn-primary" onclick="testBackendConnection()">
                         <i class="fas fa-sync-alt me-1"></i> Retry Connection
@@ -659,21 +729,17 @@
         // Load chat history from backend
         async function loadChatHistory() {
             try {
-                console.log('Fetching chat history from:', `${BACKEND_URL}/memory/${USER_ID}`);
+                console.log('Fetching chat history via proxy...');
                 
-                const response = await fetch(`${BACKEND_URL}/memory/${USER_ID}`);
-                if (!response.ok) {
-                    console.log('No chat history found or error loading');
-                    return;
-                }
-                
-                const data = await response.json();
+                const data = await fetchWithProxy(`/memory/${USER_ID}`);
                 const memories = data.memories || [];
-                console.log('Chat history received:', memories);
+                
+                console.log('Chat history received via proxy:', memories);
                 
                 displayChatHistory(memories);
             } catch (error) {
                 console.error('Error loading chat history:', error);
+                // Don't show error for chat history, it's okay if empty
             }
         }
         
@@ -744,27 +810,14 @@
             expenseInput.value = '';
             
             try {
-                console.log('Sending message to chatbot:', text);
+                console.log('Sending message via proxy:', text);
                 
-                // Send to backend
-                const response = await fetch(`${BACKEND_URL}/chatbot/${USER_ID}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: new URLSearchParams({
-                        'user_input': text
-                    })
+                // Send to backend via proxy
+                const data = await postWithProxy(`/chatbot/${USER_ID}`, {
+                    'user_input': text
                 });
                 
-                console.log('Chatbot response status:', response.status);
-                
-                if (!response.ok) {
-                    throw new Error(`Server error: ${response.status}`);
-                }
-                
-                const data = await response.json();
-                console.log('Chatbot response data:', data);
+                console.log('Chatbot response via proxy:', data);
                 
                 // Add AI response
                 addAIMessage(data.response || "Expense processed successfully!");
@@ -832,6 +885,43 @@
             chatHistory.scrollTop = chatHistory.scrollHeight;
         }
         
+        // Test backend connection
+        async function testBackendConnection() {
+            try {
+                console.log('Testing connection via proxy...');
+                const data = await fetchWithProxy('/');
+                
+                console.log('Backend connection test via proxy:', data);
+                
+                // Show success
+                const successAlert = document.createElement('div');
+                successAlert.className = 'alert alert-success alert-dismissible fade show';
+                successAlert.innerHTML = `
+                    <i class="fas fa-check-circle me-2"></i>
+                    Connected to backend successfully via proxy!
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                recentExpenses.parentNode.insertBefore(successAlert, recentExpenses);
+                
+                return true;
+            } catch (error) {
+                console.error('Backend connection test failed:', error);
+                
+                // Show error with proxy instructions
+                const errorAlert = document.createElement('div');
+                errorAlert.className = 'alert alert-danger';
+                errorAlert.innerHTML = `
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Connection Error</strong><br>
+                    ${error.message}<br><br>
+                    <small>Using CORS proxy: ${CORS_PROXY}</small>
+                `;
+                recentExpenses.parentNode.insertBefore(errorAlert, recentExpenses);
+                
+                return false;
+            }
+        }
+        
         // Utility functions
         function getCategoryClass(category) {
             const normalized = normalizeCategory(category);
@@ -879,37 +969,11 @@
         function logout() {
             // Clear user data
             localStorage.removeItem('user_id');
+            localStorage.removeItem('username');
+            localStorage.removeItem('user_email');
+            
             alert('Logged out successfully!');
             window.location.href = 'login.html';
-        }
-        
-        // Test backend connection
-        async function testBackendConnection() {
-            try {
-                console.log('Testing connection to:', BACKEND_URL);
-                const response = await fetch(`${BACKEND_URL}/`);
-                if (response.ok) {
-                    console.log('Backend connection successful');
-                    // Reload data if connection is successful
-                    loadExpenses();
-                    loadChatHistory();
-                    
-                    // Show success message
-                    const successAlert = document.createElement('div');
-                    successAlert.className = 'alert alert-success alert-dismissible fade show';
-                    successAlert.innerHTML = `
-                        <i class="fas fa-check-circle me-2"></i>
-                        Connected to backend successfully!
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    `;
-                    recentExpenses.parentNode.insertBefore(successAlert, recentExpenses);
-                } else {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-            } catch (error) {
-                console.error('Backend connection test failed:', error);
-                alert(`Cannot connect to backend: ${error.message}\n\nPlease ensure:\n1. Your backend is running at ${BACKEND_URL}\n2. CORS is enabled on the backend\n3. The URL is correct`);
-            }
         }
         
         // Event Listeners
@@ -930,10 +994,4 @@
         
         // Initialize textarea height
         expenseInput.style.height = 'auto';
-        expenseInput.style.height = expenseInput.scrollHeight + 'px';
-        
-        // Test backend connection on load
-        testBackendConnection();
-    </script>
-</body>
-</html>
+        expenseInput.style
