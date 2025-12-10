@@ -862,89 +862,87 @@
         }
         
         // Send expense message to backend - FIXED FOR 422 ERROR
-        async function sendExpenseMessage() {
-            const text = expenseInput.value.trim();
-            if (!text) return;
-            
-            // Disable input during processing
-            expenseInput.disabled = true;
-            sendButton.disabled = true;
-            expenseInput.classList.add('loading');
-            
-            // Add user message to chat
-            addUserMessage(text);
-            
-            // Clear input
-            expenseInput.value = '';
-            
+        // Send expense message to backend - UPDATED FOR JSON FORMAT
+async function sendExpenseMessage() {
+    const text = expenseInput.value.trim();
+    if (!text) return;
+    
+    // Disable input during processing
+    expenseInput.disabled = true;
+    sendButton.disabled = true;
+    expenseInput.classList.add('loading');
+    
+    // Add user message to chat
+    addUserMessage(text);
+    
+    // Clear input
+    expenseInput.value = '';
+    
+    try {
+        console.log('Sending message to chatbot:', text);
+        
+        // Send to backend using JSON format
+        const response = await fetch(`${BACKEND_URL}/chatbot/${USER_ID}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                user_input: text
+            })
+        });
+        
+        console.log('Response status:', response.status);
+        
+        if (!response.ok) {
+            let errorDetails = '';
             try {
-                console.log('Sending message to chatbot:', text);
-                
-                // Create form data with proper encoding
-                const formData = new URLSearchParams();
-                formData.append('user_input', text);
-                
-                console.log('Sending form data:', formData.toString());
-                
-                const response = await fetch(`${BACKEND_URL}/chatbot/${USER_ID}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: formData
-                });
-                
-                console.log('Response status:', response.status);
-                
-                if (!response.ok) {
-                    let errorDetails = '';
-                    try {
-                        const errorData = await response.json();
-                        errorDetails = JSON.stringify(errorData);
-                    } catch (e) {
-                        errorDetails = response.statusText;
-                    }
-                    throw new Error(`Server error: ${response.status} - ${errorDetails}`);
-                }
-                
-                const data = await response.json();
-                console.log('Chatbot response data:', data);
-                
-                // Add AI response
-                addAIMessage(data.response || "Expense processed successfully!");
-                
-                // Reload expenses to update sidebar
-                await loadExpenses();
-                
-            } catch (error) {
-                console.error('Error sending message:', error);
-                
-                // Show user-friendly error message
-                let userErrorMessage = `Sorry, I encountered an error: ${error.message}.`;
-                
-                // Suggest common fixes for 422 error
-                if (error.message.includes('422')) {
-                    userErrorMessage = `
-                        <p>I couldn't process that format. Try these examples:</p>
-                        <ul class="mb-0">
-                            <li>"Bought a t-shirt for ₹200"</li>
-                            <li>"Spent ₹150 on lunch"</li>
-                            <li>"Paid ₹500 for groceries today"</li>
-                            <li>"Taxi ride cost ₹300"</li>
-                        </ul>
-                    `;
-                }
-                
-                addAIMessage(userErrorMessage);
-            } finally {
-                // Re-enable input
-                expenseInput.disabled = false;
-                sendButton.disabled = false;
-                expenseInput.classList.remove('loading');
-                expenseInput.focus();
-                scrollToBottom();
+                const errorData = await response.json();
+                errorDetails = JSON.stringify(errorData);
+            } catch (e) {
+                errorDetails = response.statusText;
             }
+            throw new Error(`Server error: ${response.status} - ${errorDetails}`);
         }
+        
+        const data = await response.json();
+        console.log('Chatbot response data:', data);
+        
+        // Add AI response
+        addAIMessage(data.response || "Expense processed successfully!");
+        
+        // Reload expenses to update sidebar
+        await loadExpenses();
+        
+    } catch (error) {
+        console.error('Error sending message:', error);
+        
+        // Show user-friendly error message
+        let userErrorMessage = `Sorry, I encountered an error: ${error.message}.`;
+        
+        // Suggest common fixes for 422 error
+        if (error.message.includes('422')) {
+            userErrorMessage = `
+                <p>I couldn't process that format. Try these examples:</p>
+                <ul class="mb-0">
+                    <li>"Bought a t-shirt for ₹200"</li>
+                    <li>"Spent ₹150 on lunch"</li>
+                    <li>"Paid ₹500 for groceries today"</li>
+                    <li>"Taxi ride cost ₹300"</li>
+                </ul>
+            `;
+        }
+        
+        addAIMessage(userErrorMessage);
+    } finally {
+        // Re-enable input
+        expenseInput.disabled = false;
+        sendButton.disabled = false;
+        expenseInput.classList.remove('loading');
+        expenseInput.focus();
+        scrollToBottom();
+    }
+}
         
         // Add user message to chat
         function addUserMessage(text, timestamp = null) {
