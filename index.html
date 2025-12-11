@@ -62,7 +62,7 @@
             overflow-y: auto;
             padding: 20px;
             background: linear-gradient(to bottom, #ffffff, #f8fafc);
-            min-height: 0; /* Important for flex scrolling */
+            min-height: 0;
         }
         
         .chat-input-container {
@@ -314,30 +314,28 @@
             background: #a1a1a1;
         }
         
-        /* Firefox scrollbar */
-        .chat-history {
-            scrollbar-width: thin;
-            scrollbar-color: #c1c1c1 #f1f1f1;
+        /* Typing indicator */
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            padding: 10px;
         }
         
-        .sidebar {
-            scrollbar-width: thin;
-            scrollbar-color: #c1c1c1 #f1f1f1;
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #4361ee;
+            margin: 0 2px;
+            animation: typing 1.4s infinite ease-in-out;
         }
         
-        /* Ensure proper layout */
-        .row.h-100 {
-            margin: 0;
-            height: 100%;
-        }
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
         
-        .col-lg-4, .col-lg-8, .col-md-5, .col-md-7 {
-            padding: 0;
-            height: 100%;
-        }
-        
-        .p-0 {
-            height: 100%;
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
         }
         
         /* Responsive adjustments */
@@ -363,37 +361,6 @@
             .chat-input-container {
                 padding: 15px;
             }
-        }
-        
-        /* Input group styling */
-        .input-group {
-            display: flex;
-            align-items: flex-end;
-        }
-        
-        .input-group .form-control {
-            flex: 1;
-        }
-        
-        /* Message content styling */
-        .ai-message p, .user-message p {
-            margin-bottom: 0;
-            line-height: 1.5;
-        }
-        
-        /* Alert styling inside messages */
-        .ai-message .alert {
-            margin-top: 10px;
-            margin-bottom: 0;
-            border-radius: 8px;
-            padding: 8px 12px;
-            font-size: 0.9rem;
-        }
-        
-        /* Ensure chat scrolls to bottom on new messages */
-        .chat-history {
-            display: flex;
-            flex-direction: column;
         }
     </style>
 </head>
@@ -617,7 +584,17 @@
                 const data = await response.json();
                 console.log('Expenses data received:', data);
                 
-                const expenses = data.expenses || [];
+                // Handle different response formats
+                let expenses = [];
+                if (Array.isArray(data)) {
+                    expenses = data;
+                } else if (data.expenses && Array.isArray(data.expenses)) {
+                    expenses = data.expenses;
+                } else if (data.data && Array.isArray(data.data)) {
+                    expenses = data.data;
+                }
+                
+                console.log('Processed expenses:', expenses);
                 
                 if (expenses.length === 0) {
                     updateEmptyState();
@@ -668,9 +645,18 @@
         function updateExpensesUI(expenses) {
             let total = 0;
             expenses.forEach(expense => {
-                // expense structure: [id, user_id, date, category, amount, description]
-                const amount = expense[4] || 0;
-                total += amount;
+                // Handle different expense formats
+                let amount = 0;
+                
+                if (Array.isArray(expense)) {
+                    // Array format: [id, user_id, date, category, amount, description]
+                    amount = expense[4] || 0;
+                } else if (typeof expense === 'object') {
+                    // Object format: {amount: 100, category: "Food", ...}
+                    amount = expense.amount || expense.price || 0;
+                }
+                
+                total += parseFloat(amount);
             });
             
             overallTotal.textContent = `₹${total.toFixed(2)}`;
@@ -689,17 +675,27 @@
             };
             
             expenses.forEach(expense => {
-                // expense structure: [id, user_id, date, category, amount, description]
-                const category = (expense[3] || "Other").trim();
-                const amount = expense[4] || 0;
+                // Handle different expense formats
+                let category = "Other";
+                let amount = 0;
+                
+                if (Array.isArray(expense)) {
+                    // Array format
+                    category = (expense[3] || "Other").trim();
+                    amount = expense[4] || 0;
+                } else if (typeof expense === 'object') {
+                    // Object format
+                    category = (expense.category || expense.type || "Other").trim();
+                    amount = expense.amount || expense.price || 0;
+                }
                 
                 // Normalize category names
                 const normalizedCategory = normalizeCategory(category);
                 
                 if (categoryTotals.hasOwnProperty(normalizedCategory)) {
-                    categoryTotals[normalizedCategory] += amount;
+                    categoryTotals[normalizedCategory] += parseFloat(amount);
                 } else {
-                    categoryTotals["Other"] += amount;
+                    categoryTotals["Other"] += parseFloat(amount);
                 }
             });
             
@@ -751,7 +747,17 @@
             
             // Sort by date (newest first)
             const sortedExpenses = [...expenses].sort((a, b) => {
-                return new Date(b[2]) - new Date(a[2]); // date is at index 2
+                let dateA, dateB;
+                
+                if (Array.isArray(a)) {
+                    dateA = new Date(a[2]);
+                    dateB = new Date(b[2]);
+                } else {
+                    dateA = new Date(a.date || a.created_at);
+                    dateB = new Date(b.date || b.created_at);
+                }
+                
+                return dateB - dateA;
             }).slice(0, 5);
             
             if (sortedExpenses.length === 0) {
@@ -765,11 +771,22 @@
             }
             
             sortedExpenses.forEach(expense => {
-                // expense structure: [id, user_id, date, category, amount, description]
-                const category = expense[3] || "Other";
-                const description = expense[5] || "Expense";
-                const amount = expense[4] || 0;
-                const date = expense[2] || new Date().toISOString().split('T')[0];
+                // Handle different expense formats
+                let category, description, amount, date;
+                
+                if (Array.isArray(expense)) {
+                    // Array format
+                    category = expense[3] || "Other";
+                    description = expense[5] || "Expense";
+                    amount = expense[4] || 0;
+                    date = expense[2] || new Date().toISOString().split('T')[0];
+                } else {
+                    // Object format
+                    category = expense.category || expense.type || "Other";
+                    description = expense.description || expense.item || expense.name || "Expense";
+                    amount = expense.amount || expense.price || 0;
+                    date = expense.date || expense.created_at || new Date().toISOString().split('T')[0];
+                }
                 
                 const categoryClass = getCategoryClass(category);
                 
@@ -779,11 +796,11 @@
                     <div class="d-flex justify-content-between align-items-start">
                         <div>
                             <span class="badge ${categoryClass} mb-1">${category}</span>
-                            <h6 class="mb-1 fw-bold">${description}</h6>
+                            <h6 class="mb-1 fw-bold">${escapeHtml(description)}</h6>
                             <small class="text-muted">${formatDate(date)}</small>
                         </div>
                         <div class="text-end">
-                            <h6 class="text-danger mb-0 fw-bold">₹${amount.toFixed(2)}</h6>
+                            <h6 class="text-danger mb-0 fw-bold">₹${parseFloat(amount).toFixed(2)}</h6>
                         </div>
                     </div>
                 `;
@@ -821,12 +838,26 @@
             // Group memories by date
             const memoriesByDate = {};
             memories.forEach(memory => {
-                // memory structure: [id, user_id, role, memory_text, timestamp]
-                const date = memory[4] ? memory[4].split('T')[0] : new Date().toISOString().split('T')[0];
+                // Handle different memory formats
+                let role, content, timestamp;
+                
+                if (Array.isArray(memory)) {
+                    // Array format: [id, user_id, role, memory_text, timestamp]
+                    role = memory[2];
+                    content = memory[3];
+                    timestamp = memory[4];
+                } else {
+                    // Object format
+                    role = memory.role || memory.type;
+                    content = memory.content || memory.text || memory.memory_text;
+                    timestamp = memory.timestamp || memory.created_at;
+                }
+                
+                const date = timestamp ? timestamp.split('T')[0] : new Date().toISOString().split('T')[0];
                 if (!memoriesByDate[date]) {
                     memoriesByDate[date] = [];
                 }
-                memoriesByDate[date].push(memory);
+                memoriesByDate[date].push({ role, content, timestamp });
             });
             
             // Display memories in reverse chronological order
@@ -846,14 +877,10 @@
                 
                 // Add messages for this date
                 memoriesByDate[date].forEach(memory => {
-                    const role = memory[2]; // 'user' or 'assistant'
-                    const content = memory[3]; // message content
-                    const timestamp = memory[4]; // timestamp
-                    
-                    if (role === 'user') {
-                        addUserMessage(content, timestamp);
+                    if (memory.role === 'user') {
+                        addUserMessage(memory.content, memory.timestamp);
                     } else {
-                        addAIMessage(content, timestamp);
+                        addAIMessage(memory.content, memory.timestamp);
                     }
                 });
             });
@@ -861,88 +888,189 @@
             scrollToBottom();
         }
         
-        // Send expense message to backend - FIXED FOR 422 ERROR
-        // Send expense message to backend - UPDATED FOR JSON FORMAT
-async function sendExpenseMessage() {
-    const text = expenseInput.value.trim();
-    if (!text) return;
-    
-    // Disable input during processing
-    expenseInput.disabled = true;
-    sendButton.disabled = true;
-    expenseInput.classList.add('loading');
-    
-    // Add user message to chat
-    addUserMessage(text);
-    
-    // Clear input
-    expenseInput.value = '';
-    
-    try {
-        console.log('Sending message to chatbot:', text);
-        
-        // Send to backend using JSON format
-        const response = await fetch(`${BACKEND_URL}/chatbot/${USER_ID}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                user_input: text
-            })
-        });
-        
-        console.log('Response status:', response.status);
-        
-        if (!response.ok) {
-            let errorDetails = '';
+        // ========================
+        // FIXED: Send expense message to backend
+        // ========================
+        async function sendExpenseMessage() {
+            const text = expenseInput.value.trim();
+            if (!text) return;
+            
+            // Disable input during processing
+            expenseInput.disabled = true;
+            sendButton.disabled = true;
+            expenseInput.classList.add('loading');
+            
+            // Add user message to chat
+            addUserMessage(text);
+            
+            // Clear input
+            expenseInput.value = '';
+            
+            // Show typing indicator
+            showTypingIndicator();
+            
             try {
-                const errorData = await response.json();
-                errorDetails = JSON.stringify(errorData);
-            } catch (e) {
-                errorDetails = response.statusText;
+                console.log('Sending message to chatbot:', text);
+                
+                // Prepare request body
+                const requestBody = {
+                    user_input: text
+                };
+                
+                console.log('Request body:', JSON.stringify(requestBody));
+                
+                // Send to backend
+                const response = await fetch(`${BACKEND_URL}/chatbot/${USER_ID}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+                
+                console.log('Response status:', response.status);
+                
+                // Remove typing indicator
+                removeTypingIndicator();
+                
+                if (!response.ok) {
+                    let errorDetails = '';
+                    try {
+                        const errorData = await response.json();
+                        errorDetails = JSON.stringify(errorData);
+                    } catch (e) {
+                        errorDetails = response.statusText;
+                    }
+                    
+                    // Handle 422 error specifically
+                    if (response.status === 422) {
+                        addAIMessage(`
+                            <p><strong>I couldn't understand that format.</strong> Please try:</p>
+                            <ul class="mb-2">
+                                <li>"Bought a t-shirt for ₹400"</li>
+                                <li>"Spent ₹150 on lunch"</li>
+                                <li>"Paid ₹500 for groceries"</li>
+                                <li>"Taxi ride cost ₹300"</li>
+                            </ul>
+                            <p class="mb-0">Make sure to include the amount with ₹ symbol or numbers.</p>
+                        `);
+                        return;
+                    }
+                    
+                    throw new Error(`Server error: ${response.status} - ${errorDetails}`);
+                }
+                
+                const data = await response.json();
+                console.log('Chatbot response data:', data);
+                
+                // Handle different response formats
+                let aiResponse = '';
+                
+                if (typeof data === 'string') {
+                    aiResponse = data;
+                } else if (data.response) {
+                    aiResponse = data.response;
+                } else if (data.message) {
+                    aiResponse = data.message;
+                } else if (data.answer) {
+                    aiResponse = data.answer;
+                } else if (typeof data === 'object') {
+                    // Try to stringify the object nicely
+                    aiResponse = formatObjectResponse(data);
+                } else {
+                    aiResponse = "Expense processed successfully!";
+                }
+                
+                // Add AI response
+                addAIMessage(aiResponse);
+                
+                // Reload expenses to update sidebar
+                setTimeout(loadExpenses, 1000);
+                
+            } catch (error) {
+                console.error('Error sending message:', error);
+                
+                // Remove typing indicator
+                removeTypingIndicator();
+                
+                // Show user-friendly error message
+                let userErrorMessage = `
+                    <p><strong>Sorry, I encountered an error:</strong></p>
+                    <p class="mb-2">${escapeHtml(error.message)}</p>
+                    <p class="mb-0">Please check your internet connection and try again.</p>
+                `;
+                
+                addAIMessage(userErrorMessage);
+            } finally {
+                // Re-enable input
+                expenseInput.disabled = false;
+                sendButton.disabled = false;
+                expenseInput.classList.remove('loading');
+                expenseInput.focus();
+                scrollToBottom();
             }
-            throw new Error(`Server error: ${response.status} - ${errorDetails}`);
         }
         
-        const data = await response.json();
-        console.log('Chatbot response data:', data);
+        // Format object response nicely
+        function formatObjectResponse(obj) {
+            // If it's an expense object
+            if (obj.category && obj.amount) {
+                return `
+                    <p><strong>✅ Expense added successfully!</strong></p>
+                    <div class="alert alert-success mt-2">
+                        <div><strong>Category:</strong> ${obj.category}</div>
+                        <div><strong>Amount:</strong> ₹${obj.amount}</div>
+                        ${obj.description ? `<div><strong>Description:</strong> ${obj.description}</div>` : ''}
+                    </div>
+                `;
+            }
+            
+            // If it's a summary object
+            if (obj.summary) {
+                return obj.summary;
+            }
+            
+            // Otherwise, stringify the object
+            try {
+                return JSON.stringify(obj, null, 2);
+            } catch {
+                return "Received response from AI. Check console for details.";
+            }
+        }
         
-        // Add AI response
-        addAIMessage(data.response || "Expense processed successfully!");
-        
-        // Reload expenses to update sidebar
-        await loadExpenses();
-        
-    } catch (error) {
-        console.error('Error sending message:', error);
-        
-        // Show user-friendly error message
-        let userErrorMessage = `Sorry, I encountered an error: ${error.message}.`;
-        
-        // Suggest common fixes for 422 error
-        if (error.message.includes('422')) {
-            userErrorMessage = `
-                <p>I couldn't process that format. Try these examples:</p>
-                <ul class="mb-0">
-                    <li>"Bought a t-shirt for ₹200"</li>
-                    <li>"Spent ₹150 on lunch"</li>
-                    <li>"Paid ₹500 for groceries today"</li>
-                    <li>"Taxi ride cost ₹300"</li>
-                </ul>
+        // Show typing indicator
+        function showTypingIndicator() {
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'ai-message';
+            typingDiv.id = 'typing-indicator';
+            typingDiv.innerHTML = `
+                <div class="d-flex align-items-center mb-2">
+                    <div class="category-icon bg-primary text-white">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div>
+                        <strong>ExpenseTracker AI</strong>
+                        <div class="text-muted" style="font-size: 0.8rem;">Typing...</div>
+                    </div>
+                </div>
+                <div class="typing-indicator">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
             `;
+            
+            chatHistory.appendChild(typingDiv);
+            scrollToBottom();
         }
         
-        addAIMessage(userErrorMessage);
-    } finally {
-        // Re-enable input
-        expenseInput.disabled = false;
-        sendButton.disabled = false;
-        expenseInput.classList.remove('loading');
-        expenseInput.focus();
-        scrollToBottom();
-    }
-}
+        // Remove typing indicator
+        function removeTypingIndicator() {
+            const typingIndicator = document.getElementById('typing-indicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
         
         // Add user message to chat
         function addUserMessage(text, timestamp = null) {
@@ -975,6 +1103,13 @@ async function sendExpenseMessage() {
             
             const time = timestamp ? formatTime(timestamp) : 'Just now';
             
+            // Check if text contains HTML tags
+            let contentHtml = text;
+            if (!text.includes('<') && !text.includes('>')) {
+                // Plain text, escape it
+                contentHtml = escapeHtml(text).replace(/\n/g, '<br>');
+            }
+            
             messageDiv.innerHTML = `
                 <div class="d-flex align-items-center mb-2">
                     <div class="category-icon bg-primary text-white">
@@ -985,7 +1120,7 @@ async function sendExpenseMessage() {
                         <div class="text-muted" style="font-size: 0.8rem;">${time}</div>
                     </div>
                 </div>
-                <p class="mb-0">${escapeHtml(text)}</p>
+                <div class="ai-response-content">${contentHtml}</div>
             `;
             
             chatHistory.appendChild(messageDiv);
@@ -1003,13 +1138,13 @@ async function sendExpenseMessage() {
                     
                     // Show success
                     const successAlert = document.createElement('div');
-                    successAlert.className = 'alert alert-success alert-dismissible fade show';
+                    successAlert.className = 'alert alert-success alert-dismissible fade show mt-3';
                     successAlert.innerHTML = `
                         <i class="fas fa-check-circle me-2"></i>
-                        Connected to backend successfully!
+                        <strong>Connected to backend successfully!</strong>
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     `;
-                    recentExpenses.parentNode.insertBefore(successAlert, recentExpenses);
+                    chatHistory.parentNode.insertBefore(successAlert, chatHistory);
                     
                     return true;
                 } else {
@@ -1017,17 +1152,6 @@ async function sendExpenseMessage() {
                 }
             } catch (error) {
                 console.error('Backend connection test failed:', error);
-                
-                // Show error
-                const errorAlert = document.createElement('div');
-                errorAlert.className = 'alert alert-danger';
-                errorAlert.innerHTML = `
-                    <i class="fas fa-exclamation-triangle me-2"></i>
-                    <strong>Connection Error</strong><br>
-                    ${error.message}
-                `;
-                recentExpenses.parentNode.insertBefore(errorAlert, recentExpenses);
-                
                 return false;
             }
         }
@@ -1046,10 +1170,16 @@ async function sendExpenseMessage() {
         }
         
         function formatDate(dateString) {
+            if (!dateString) return 'Today';
+            
             const date = new Date(dateString);
             const now = new Date();
             const diffTime = Math.abs(now - date);
             const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (isNaN(date.getTime())) {
+                return 'Recently';
+            }
             
             if (diffDays === 0) return 'Today';
             if (diffDays === 1) return 'Yesterday';
@@ -1063,7 +1193,11 @@ async function sendExpenseMessage() {
         }
         
         function formatTime(dateTimeString) {
+            if (!dateTimeString) return 'Just now';
+            
             const date = new Date(dateTimeString);
+            if (isNaN(date.getTime())) return 'Recently';
+            
             return date.toLocaleTimeString('en-IN', {
                 hour: '2-digit',
                 minute: '2-digit'
@@ -1071,6 +1205,7 @@ async function sendExpenseMessage() {
         }
         
         function escapeHtml(text) {
+            if (!text) return '';
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
@@ -1101,11 +1236,6 @@ async function sendExpenseMessage() {
             this.style.height = 'auto';
             const newHeight = Math.min(this.scrollHeight, 150);
             this.style.height = newHeight + 'px';
-            
-            // Adjust chat history height when textarea expands
-            const chatContainer = document.querySelector('.chat-container');
-            const inputHeight = this.offsetHeight + 40; // 40px for padding/margins
-            chatHistory.style.maxHeight = `calc(100% - ${inputHeight}px)`;
         });
         
         // Initialize textarea height
