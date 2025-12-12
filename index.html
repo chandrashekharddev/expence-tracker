@@ -67,7 +67,7 @@
             overflow-y: auto;
             padding: 20px;
             background: linear-gradient(to bottom, #ffffff, #f8fafc);
-            min-height: 0;
+            min-height: 0; /* Important for flex scrolling */
         }
         
         .chat-input-container {
@@ -183,18 +183,65 @@
             margin-bottom: 8px;
         }
         
-        /* Category colors */
-        .category-clothes { background: rgba(67, 97, 238, 0.1); color: #4361ee; border: 1px solid rgba(67, 97, 238, 0.2); }
-        .category-food { background: rgba(76, 201, 240, 0.1); color: #4cc9f0; border: 1px solid rgba(76, 201, 240, 0.2); }
-        .category-transport { background: rgba(248, 150, 30, 0.1); color: #f8961e; border: 1px solid rgba(248, 150, 30, 0.2); }
-        .category-bills { background: rgba(114, 9, 183, 0.1); color: #7209b7; border: 1px solid rgba(114, 9, 183, 0.2); }
-        .category-entertainment { background: rgba(247, 37, 133, 0.1); color: #f72585; border: 1px solid rgba(247, 37, 133, 0.2); }
-        .category-electronics { background: rgba(42, 157, 143, 0.1); color: #2a9d8f; border: 1px solid rgba(42, 157, 143, 0.2); }
-        .category-stationary { background: rgba(231, 111, 81, 0.1); color: #e76f51; border: 1px solid rgba(231, 111, 81, 0.2); }
-        .category-health { background: rgba(233, 196, 106, 0.1); color: #e9c46a; border: 1px solid rgba(233, 196, 106, 0.2); }
-        .category-education { background: rgba(38, 70, 83, 0.1); color: #264653; border: 1px solid rgba(38, 70, 83, 0.2); }
-        .category-travel { background: rgba(157, 78, 221, 0.1); color: #9d4edd; border: 1px solid rgba(157, 78, 221, 0.2); }
-        .category-other { background: rgba(108, 117, 125, 0.1); color: #6c757d; border: 1px solid rgba(108, 117, 125, 0.2); }
+        .category-clothes {
+            background: rgba(67, 97, 238, 0.1);
+            color: #4361ee;
+            border: 1px solid rgba(67, 97, 238, 0.2);
+        }
+        
+        .category-food {
+            background: rgba(76, 201, 240, 0.1);
+            color: #4cc9f0;
+            border: 1px solid rgba(76, 201, 240, 0.2);
+        }
+        
+        .category-transport {
+            background: rgba(248, 150, 30, 0.1);
+            color: #f8961e;
+            border: 1px solid rgba(248, 150, 30, 0.2);
+        }
+        
+        .category-bills {
+            background: rgba(114, 9, 183, 0.1);
+            color: #7209b7;
+            border: 1px solid rgba(114, 9, 183, 0.2);
+        }
+        
+        .category-entertainment {
+            background: rgba(247, 37, 133, 0.1);
+            color: #f72585;
+            border: 1px solid rgba(247, 37, 133, 0.2);
+        }
+        
+        .category-electronics {
+            background: rgba(42, 157, 143, 0.1);
+            color: #2a9d8f;
+            border: 1px solid rgba(42, 157, 143, 0.2);
+        }
+        
+        .category-stationary {
+            background: rgba(231, 111, 81, 0.1);
+            color: #e76f51;
+            border: 1px solid rgba(231, 111, 81, 0.2);
+        }
+        
+        .category-health {
+            background: rgba(233, 196, 106, 0.1);
+            color: #e9c46a;
+            border: 1px solid rgba(233, 196, 106, 0.2);
+        }
+        
+        .category-education {
+            background: rgba(38, 70, 83, 0.1);
+            color: #264653;
+            border: 1px solid rgba(38, 70, 83, 0.2);
+        }
+        
+        .category-travel {
+            background: rgba(157, 78, 221, 0.1);
+            color: #9d4edd;
+            border: 1px solid rgba(157, 78, 221, 0.2);
+        }
         
         .expense-item {
             background: white;
@@ -219,14 +266,25 @@
             height: 100%;
         }
         
-        .stats-card.clothes { border-top: 4px solid #4361ee; }
-        .stats-card.food { border-top: 4px solid #4cc9f0; }
-        .stats-card.transport { border-top: 4px solid #f8961e; }
-        .stats-card.electronics { border-top: 4px solid #2a9d8f; }
-        .stats-card.other { border-top: 4px solid #6c757d; }
-        .stats-card.total { 
-            border-top: 4px solid #7209b7; 
-            background: linear-gradient(135deg, #f8fafc, #ffffff); 
+        .stats-card.clothes {
+            border-top: 4px solid #4361ee;
+        }
+        
+        .stats-card.food {
+            border-top: 4px solid #4cc9f0;
+        }
+        
+        .stats-card.transport {
+            border-top: 4px solid #f8961e;
+        }
+        
+        .stats-card.electronics {
+            border-top: 4px solid #2a9d8f;
+        }
+        
+        .stats-card.total {
+            border-top: 4px solid #7209b7;
+            background: linear-gradient(135deg, #f8fafc, #ffffff);
         }
         
         .stats-card h6 {
@@ -295,34 +353,13 @@
             background: #a1a1a1;
         }
         
-        /* Recent expenses scrollbar */
-        .recent-expenses-container {
-            max-height: 200px;
-            overflow-y: auto;
-            margin-bottom: 20px;
-            border-radius: 10px;
-        }
-        
-        .recent-expenses-container::-webkit-scrollbar {
-            width: 6px;
-        }
-        
-        .recent-expenses-container::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 10px;
-        }
-        
-        .recent-expenses-container::-webkit-scrollbar-thumb {
-            background: #c1c1c1;
-            border-radius: 10px;
-        }
-        
-        .recent-expenses-container::-webkit-scrollbar-thumb:hover {
-            background: #a1a1a1;
-        }
-        
         /* Firefox scrollbar */
-        .chat-history, .sidebar, .recent-expenses-container {
+        .chat-history {
+            scrollbar-width: thin;
+            scrollbar-color: #c1c1c1 #f1f1f1;
+        }
+        
+        .sidebar {
             scrollbar-width: thin;
             scrollbar-color: #c1c1c1 #f1f1f1;
         }
@@ -342,18 +379,92 @@
             height: 100%;
         }
         
-        /* Category badge colors */
-        .badge-shopping { background-color: #4361ee !important; color: white; }
-        .badge-food { background-color: #4cc9f0 !important; color: white; }
-        .badge-transport { background-color: #f8961e !important; color: white; }
-        .badge-bills { background-color: #7209b7 !important; color: white; }
-        .badge-entertainment { background-color: #f72585 !important; color: white; }
-        .badge-electronics { background-color: #2a9d8f !important; color: white; }
-        .badge-stationary { background-color: #e76f51 !important; color: white; }
-        .badge-health { background-color: #e9c46a !important; color: #000; }
-        .badge-education { background-color: #264653 !important; color: white; }
-        .badge-travel { background-color: #9d4edd !important; color: white; }
-        .badge-other { background-color: #6c757d !important; color: white; }
+        /* Budget Alert Styles */
+        .budget-alert {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 1050;
+            min-width: 300px;
+            max-width: 400px;
+            animation: slideInRight 0.5s ease-out;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+            border-radius: 10px;
+            border: none;
+        }
+        
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .budget-warning {
+            animation: pulse 2s infinite;
+        }
+        
+        .alert-icon {
+            font-size: 1.5rem;
+            margin-right: 10px;
+        }
+        
+        /* Budget Settings Button */
+        .budget-settings-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+            transition: all 0.3s;
+        }
+        
+        .budget-settings-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(67, 97, 238, 0.4);
+        }
+        
+        /* Category Badge Colors */
+        .badge-electronics {
+            background-color: var(--electronics-color) !important;
+            color: white;
+        }
+        
+        .badge-stationary {
+            background-color: var(--stationary-color) !important;
+            color: white;
+        }
+        
+        .badge-health {
+            background-color: var(--health-color) !important;
+            color: #000;
+        }
+        
+        .badge-education {
+            background-color: var(--education-color) !important;
+            color: white;
+        }
+        
+        .badge-travel {
+            background-color: var(--travel-color) !important;
+            color: white;
+        }
         
         /* Responsive adjustments */
         @media (max-width: 768px) {
@@ -377,6 +488,13 @@
             
             .chat-input-container {
                 padding: 15px;
+            }
+            
+            .budget-alert {
+                min-width: 250px;
+                max-width: 300px;
+                right: 10px;
+                top: 70px;
             }
         }
         
@@ -421,14 +539,12 @@
             height: 4px;
             margin-top: 5px;
         }
-        
-        /* Dashboard button in navbar */
-        .navbar .btn-outline-primary {
-            margin-right: 10px;
-        }
     </style>
 </head>
 <body>
+    <!-- Budget Alert Container -->
+    <div id="budget-alert-container" style="position: fixed; top: 80px; right: 20px; z-index: 1050;"></div>
+    
     <!-- Navigation Bar -->
     <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
         <div class="container-fluid">
@@ -436,21 +552,35 @@
                 <i class="fas fa-wallet me-2"></i>MyMoney.Ai
             </a>
             <div class="d-flex align-items-center">
-                <button class="btn btn-outline-primary me-2" onclick="location.href='dashboard.html'">
-                    <i class="fas fa-chart-pie me-1"></i>Dashboard
-                </button>
+                <div class="navbar-progress d-none d-md-block">
+                    <div class="d-flex justify-content-between">
+                        <small class="text-muted">Budget: <span id="navbar-budget">₹20,000</span></small>
+                        <small class="text-muted">Remaining: <span id="navbar-remaining">₹20,000</span></small>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar bg-success" id="navbar-progress" style="width: 0%"></div>
+                    </div>
+                </div>
                 <span class="me-3 d-none d-md-block">Total: <strong id="total-spent">₹0</strong></span>
                 <div class="dropdown">
                     <button class="btn btn-outline-primary dropdown-toggle" type="button" id="userMenu" data-bs-toggle="dropdown">
                         <i class="fas fa-user me-1"></i> <span id="username">User</span>
                     </button>
                     <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="dashboard.html"><i class="fas fa-chart-pie me-2"></i>Dashboard</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="login.html"><i class="fas fa-sign-in-alt me-2"></i>Login</a></li>
                         <li><a class="dropdown-item" href="#" onclick="logout()"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
                     </ul>
                 </div>
             </div>
         </div>
     </nav>
+
+    <!-- Budget Settings Button -->
+    <button class="budget-settings-btn" onclick="showBudgetSettings()" title="Budget Settings">
+        <i class="fas fa-cog"></i>
+    </button>
 
     <!-- Main Container -->
     <div class="container-fluid main-container">
@@ -459,7 +589,7 @@
             <div class="col-lg-4 col-md-5 p-0">
                 <div class="sidebar p-3">
                     <h5 class="mb-3"><i class="fas fa-history me-2"></i>Recent Expenses</h5>
-                    <div class="recent-expenses-container" id="recent-expenses">
+                    <div id="recent-expenses">
                         <div class="text-center py-4">
                             <div class="spinner-border text-primary" role="status">
                                 <span class="visually-hidden">Loading...</span>
@@ -471,14 +601,13 @@
                     <hr class="my-4">
                     
                     <h5 class="mb-3"><i class="fas fa-chart-pie me-2"></i>Spending by Category</h5>
-                    <div class="row" id="category-cards">
-                        <!-- Categories will be dynamically added here -->
+                    <div class="row">
                         <div class="col-6 mb-3">
                             <div class="stats-card clothes">
                                 <h6><i class="fas fa-tshirt me-2"></i>Shopping</h6>
-                                <h4 id="shopping-total">₹0</h4>
+                                <h4 id="clothes-total">₹0</h4>
                                 <div class="progress">
-                                    <div class="progress-bar" id="shopping-progress" style="width: 0%"></div>
+                                    <div class="progress-bar" id="clothes-progress" style="width: 0%"></div>
                                 </div>
                             </div>
                         </div>
@@ -501,10 +630,26 @@
                             </div>
                         </div>
                         <div class="col-6 mb-3">
+                            <div class="stats-card electronics">
+                                <h6><i class="fas fa-laptop me-2"></i>Electronics</h6>
+                                <h4 id="electronics-total">₹0</h4>
+                                <div class="progress">
+                                    <div class="progress-bar" id="electronics-progress" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-3">
                             <div class="stats-card total">
                                 <h6><i class="fas fa-wallet me-2"></i>Total</h6>
                                 <h4 id="overall-total">₹0</h4>
-                                <small class="text-muted">This month</small>
+                                <small class="text-muted" id="budget-status">Within budget</small>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="stats-card total">
+                                <h6><i class="fas fa-calendar me-2"></i>Budget</h6>
+                                <h4 id="budget-remaining">₹20,000</h4>
+                                <small class="text-muted">of ₹20,000</small>
                             </div>
                         </div>
                     </div>
@@ -537,6 +682,59 @@
         </div>
     </div>
 
+    <!-- Budget Settings Modal -->
+    <div class="modal fade" id="budgetSettingsModal" tabindex="-1" aria-labelledby="budgetSettingsModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="budgetSettingsModalLabel">Budget Settings</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="monthly-budget" class="form-label">Monthly Budget</label>
+                        <div class="input-group">
+                            <span class="input-group-text">₹</span>
+                            <input type="number" class="form-control" id="monthly-budget" value="20000" min="0" step="100">
+                        </div>
+                        <div class="form-text">Set your monthly spending limit</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Budget Alerts</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="alert-80" checked>
+                            <label class="form-check-label" for="alert-80">
+                                Alert when 80% of budget is used
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="alert-90" checked>
+                            <label class="form-check-label" for="alert-90">
+                                Alert when 90% of budget is used
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="alert-exceeded" checked>
+                            <label class="form-check-label" for="alert-exceeded">
+                                Alert when budget is exceeded
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Alerts will appear in the top-right corner when budget limits are reached.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="saveBudgetSettings()">Save Settings</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Bootstrap JS Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     
@@ -552,15 +750,32 @@
         const sendButton = document.getElementById('send-btn');
         const chatHistory = document.getElementById('chat-history');
         const recentExpenses = document.getElementById('recent-expenses');
-        const categoryCards = document.getElementById('category-cards');
         
         // Stats elements
+        const clothesTotal = document.getElementById('clothes-total');
+        const foodTotal = document.getElementById('food-total');
+        const transportTotal = document.getElementById('transport-total');
+        const electronicsTotal = document.getElementById('electronics-total');
         const overallTotal = document.getElementById('overall-total');
         const totalSpent = document.getElementById('total-spent');
+        const budgetRemaining = document.getElementById('budget-remaining');
+        const budgetStatus = document.getElementById('budget-status');
+        const navbarBudget = document.getElementById('navbar-budget');
+        const navbarRemaining = document.getElementById('navbar-remaining');
+        const navbarProgress = document.getElementById('navbar-progress');
         
-        // Store all expenses for updates
-        let allExpenses = [];
-        let categoryData = {};
+        // User budget settings
+        let userBudget = parseInt(localStorage.getItem(`budget_${USER_ID}`)) || 20000;
+        let budgetAlerts = {
+            alert80: localStorage.getItem(`alert_80_${USER_ID}`) !== 'false',
+            alert90: localStorage.getItem(`alert_90_${USER_ID}`) !== 'false',
+            alertExceeded: localStorage.getItem(`alert_exceeded_${USER_ID}`) !== 'false'
+        };
+        
+        // Track if alerts have been shown
+        let alert80Shown = false;
+        let alert90Shown = false;
+        let alertExceededShown = false;
         
         // ========================
         // Authentication Check
@@ -587,6 +802,9 @@
             // Set username display
             const username = localStorage.getItem('username') || USER_ID;
             document.getElementById('username').textContent = username;
+            
+            // Load budget settings
+            loadBudgetSettings();
             
             showWelcomeMessage();
             loadExpenses();
@@ -640,7 +858,7 @@
             }, 100);
         }
         
-        // Load expenses from backend - FIXED FOR OLD DATA
+        // Load expenses from backend
         async function loadExpenses() {
             try {
                 console.log('Fetching expenses from:', `${BACKEND_URL}/expenses?user_id=${USER_ID}`);
@@ -655,7 +873,6 @@
                 console.log('Expenses data received:', data);
                 
                 const expenses = data.expenses || [];
-                allExpenses = expenses; // Store for updates
                 
                 if (expenses.length === 0) {
                     updateEmptyState();
@@ -663,6 +880,7 @@
                     updateExpensesUI(expenses);
                     updateCategoryTotals(expenses);
                     updateRecentExpenses(expenses);
+                    checkBudgetAlerts(expenses);
                 }
             } catch (error) {
                 console.error('Error loading expenses:', error);
@@ -679,8 +897,15 @@
                 </div>
             `;
             
+            clothesTotal.textContent = '₹0';
+            foodTotal.textContent = '₹0';
+            transportTotal.textContent = '₹0';
+            electronicsTotal.textContent = '₹0';
             overallTotal.textContent = '₹0';
             totalSpent.textContent = '₹0';
+            budgetRemaining.textContent = `₹${userBudget.toLocaleString('en-IN')}`;
+            navbarBudget.textContent = `₹${userBudget.toLocaleString('en-IN')}`;
+            navbarRemaining.textContent = `₹${userBudget.toLocaleString('en-IN')}`;
         }
         
         // Show error state
@@ -692,126 +917,152 @@
                     ${errorMsg}<br>
                     <small>Backend URL: ${BACKEND_URL}</small>
                     <br><br>
-                    <button class="btn btn-sm btn-primary" onclick="loadExpenses()">
-                        <i class="fas fa-sync-alt me-1"></i> Retry
+                    <button class="btn btn-sm btn-primary" onclick="testBackendConnection()">
+                        <i class="fas fa-sync-alt me-1"></i> Retry Connection
                     </button>
                 </div>
             `;
         }
         
-        // Update expenses UI
+        // Update expenses UI and check budget
         function updateExpensesUI(expenses) {
             let total = 0;
             expenses.forEach(expense => {
-                total += expense[4] || 0;
+                // expense structure: [id, user_id, date, category, amount, description]
+                const amount = expense[4] || 0;
+                total += amount;
             });
             
             overallTotal.textContent = `₹${total.toFixed(2)}`;
             totalSpent.textContent = `₹${total.toFixed(2)}`;
+            
+            // Calculate budget remaining
+            const remaining = userBudget - total;
+            const remainingText = remaining >= 0 ? `₹${remaining.toFixed(2)}` : `-₹${Math.abs(remaining).toFixed(2)}`;
+            budgetRemaining.textContent = remainingText;
+            
+            // Update navbar
+            navbarBudget.textContent = `₹${userBudget.toLocaleString('en-IN')}`;
+            navbarRemaining.textContent = remainingText;
+            
+            // Update progress bar
+            const percentage = Math.min((total / userBudget) * 100, 100);
+            navbarProgress.style.width = `${percentage}%`;
+            
+            // Change progress bar color based on usage
+            if (percentage >= 100) {
+                navbarProgress.className = 'progress-bar bg-danger';
+                budgetStatus.textContent = 'Budget exceeded!';
+                budgetStatus.className = 'text-danger';
+            } else if (percentage >= 80) {
+                navbarProgress.className = 'progress-bar bg-warning';
+                budgetStatus.textContent = 'High spending';
+                budgetStatus.className = 'text-warning';
+            } else if (percentage >= 60) {
+                navbarProgress.className = 'progress-bar bg-info';
+                budgetStatus.textContent = 'Moderate spending';
+                budgetStatus.className = 'text-info';
+            } else {
+                navbarProgress.className = 'progress-bar bg-success';
+                budgetStatus.textContent = 'Within budget';
+                budgetStatus.className = 'text-success';
+            }
         }
         
-        // Update category totals with dynamic category creation
+        // Update category totals with new categories
         function updateCategoryTotals(expenses) {
-            // Reset category data
-            categoryData = {};
+            const categoryTotals = {
+                "Shopping": 0,
+                "Food": 0,
+                "Transport": 0,
+                "Bills": 0,
+                "Entertainment": 0,
+                "Electronics": 0,
+                "Stationary": 0,
+                "Health": 0,
+                "Education": 0,
+                "Travel": 0,
+                "Other": 0
+            };
             
-            // Process all expenses
             expenses.forEach(expense => {
+                // expense structure: [id, user_id, date, category, amount, description]
                 const category = (expense[3] || "Other").trim();
                 const amount = expense[4] || 0;
                 
                 // Normalize category names
                 const normalizedCategory = normalizeCategory(category);
                 
-                if (!categoryData[normalizedCategory]) {
-                    categoryData[normalizedCategory] = {
-                        total: 0,
-                        count: 0
-                    };
+                if (categoryTotals.hasOwnProperty(normalizedCategory)) {
+                    categoryTotals[normalizedCategory] += amount;
+                } else {
+                    categoryTotals["Other"] += amount;
                 }
-                
-                categoryData[normalizedCategory].total += amount;
-                categoryData[normalizedCategory].count++;
             });
             
             // Calculate total for percentages
             let total = 0;
-            for (const category in categoryData) {
-                total += categoryData[category].total;
+            for (const category in categoryTotals) {
+                total += categoryTotals[category];
             }
             
-            // Clear existing category cards (keep the total card)
-            const totalCard = categoryCards.querySelector('.stats-card.total').parentElement;
-            categoryCards.innerHTML = '';
+            // Update UI for main categories
+            clothesTotal.textContent = `₹${categoryTotals["Shopping"].toFixed(2)}`;
+            foodTotal.textContent = `₹${categoryTotals["Food"].toFixed(2)}`;
+            transportTotal.textContent = `₹${categoryTotals["Transport"].toFixed(2)}`;
+            electronicsTotal.textContent = `₹${categoryTotals["Electronics"].toFixed(2)}`;
             
-            // Sort categories by total (highest first)
-            const sortedCategories = Object.entries(categoryData)
-                .sort(([, a], [, b]) => b.total - a.total);
-            
-            // Add category cards (max 5 plus total)
-            let cardCount = 0;
-            sortedCategories.forEach(([category, data]) => {
-                if (cardCount < 5) {
-                    const percentage = total > 0 ? (data.total / total) * 100 : 0;
-                    const categoryClass = getCategoryCardClass(category);
-                    const icon = getCategoryIcon(category);
-                    
-                    const cardHtml = `
-                        <div class="col-6 mb-3">
-                            <div class="stats-card ${categoryClass}">
-                                <h6><i class="fas ${icon} me-2"></i>${category}</h6>
-                                <h4 id="${category.toLowerCase()}-total">₹${data.total.toFixed(2)}</h4>
-                                <div class="progress">
-                                    <div class="progress-bar" id="${category.toLowerCase()}-progress" style="width: ${percentage}%"></div>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                    
-                    categoryCards.insertAdjacentHTML('beforeend', cardHtml);
-                    cardCount++;
-                }
-            });
-            
-            // Add total card at the end
-            categoryCards.appendChild(totalCard);
+            // Update progress bars
+            if (total > 0) {
+                const shoppingPercent = (categoryTotals["Shopping"] / total) * 100;
+                const foodPercent = (categoryTotals["Food"] / total) * 100;
+                const transportPercent = (categoryTotals["Transport"] / total) * 100;
+                const electronicsPercent = (categoryTotals["Electronics"] / total) * 100;
+                
+                document.getElementById('clothes-progress').style.width = `${shoppingPercent}%`;
+                document.getElementById('food-progress').style.width = `${foodPercent}%`;
+                document.getElementById('transport-progress').style.width = `${transportPercent}%`;
+                document.getElementById('electronics-progress').style.width = `${electronicsPercent}%`;
+            }
         }
         
         // Enhanced category normalization with more categories
         function normalizeCategory(category) {
             const lowerCategory = category.toLowerCase();
             
-            if (lowerCategory.includes('clothes') || lowerCategory.includes('clothing') || lowerCategory.includes('shirt') || lowerCategory.includes('shopping') || lowerCategory.includes('sari') || lowerCategory.includes('dress') || lowerCategory.includes('jeans')) {
+            if (lowerCategory.includes('clothes') || lowerCategory.includes('clothing') || lowerCategory.includes('shirt') || lowerCategory.includes('shopping') || lowerCategory.includes('sari') || lowerCategory.includes('dress')) {
                 return "Shopping";
-            } else if (lowerCategory.includes('food') || lowerCategory.includes('dining') || lowerCategory.includes('lunch') || lowerCategory.includes('dinner') || lowerCategory.includes('grocer') || lowerCategory.includes('restaurant') || lowerCategory.includes('meal') || lowerCategory.includes('breakfast')) {
+            } else if (lowerCategory.includes('food') || lowerCategory.includes('dining') || lowerCategory.includes('lunch') || lowerCategory.includes('dinner') || lowerCategory.includes('grocer') || lowerCategory.includes('restaurant') || lowerCategory.includes('meal')) {
                 return "Food";
-            } else if (lowerCategory.includes('transport') || lowerCategory.includes('travel') || lowerCategory.includes('taxi') || lowerCategory.includes('bus') || lowerCategory.includes('fuel') || lowerCategory.includes('auto') || lowerCategory.includes('cab') || lowerCategory.includes('metro')) {
+            } else if (lowerCategory.includes('transport') || lowerCategory.includes('travel') || lowerCategory.includes('taxi') || lowerCategory.includes('bus') || lowerCategory.includes('fuel') || lowerCategory.includes('auto') || lowerCategory.includes('cab')) {
                 return "Transport";
-            } else if (lowerCategory.includes('bills') || lowerCategory.includes('utilities') || lowerCategory.includes('electric') || lowerCategory.includes('water') || lowerCategory.includes('rent') || lowerCategory.includes('internet') || lowerCategory.includes('phone') || lowerCategory.includes('wifi')) {
+            } else if (lowerCategory.includes('bills') || lowerCategory.includes('utilities') || lowerCategory.includes('electric') || lowerCategory.includes('water') || lowerCategory.includes('rent') || lowerCategory.includes('internet') || lowerCategory.includes('phone')) {
                 return "Bills";
-            } else if (lowerCategory.includes('entertain') || lowerCategory.includes('movie') || lowerCategory.includes('game') || lowerCategory.includes('concert') || lowerCategory.includes('streaming') || lowerCategory.includes('netflix')) {
+            } else if (lowerCategory.includes('entertain') || lowerCategory.includes('movie') || lowerCategory.includes('game') || lowerCategory.includes('concert') || lowerCategory.includes('streaming')) {
                 return "Entertainment";
-            } else if (lowerCategory.includes('electron') || lowerCategory.includes('phone') || lowerCategory.includes('laptop') || lowerCategory.includes('computer') || lowerCategory.includes('smartphone') || lowerCategory.includes('tablet') || lowerCategory.includes('charger')) {
+            } else if (lowerCategory.includes('electron') || lowerCategory.includes('phone') || lowerCategory.includes('laptop') || lowerCategory.includes('computer') || lowerCategory.includes('smartphone') || lowerCategory.includes('tablet')) {
                 return "Electronics";
-            } else if (lowerCategory.includes('stationary') || lowerCategory.includes('pen') || lowerCategory.includes('book') || lowerCategory.includes('paper') || lowerCategory.includes('notebook') || lowerCategory.includes('pencil')) {
+            } else if (lowerCategory.includes('stationary') || lowerCategory.includes('pen') || lowerCategory.includes('book') || lowerCategory.includes('paper') || lowerCategory.includes('notebook')) {
                 return "Stationary";
-            } else if (lowerCategory.includes('health') || lowerCategory.includes('medical') || lowerCategory.includes('doctor') || lowerCategory.includes('medicine') || lowerCategory.includes('hospital') || lowerCategory.includes('pharmacy')) {
+            } else if (lowerCategory.includes('health') || lowerCategory.includes('medical') || lowerCategory.includes('doctor') || lowerCategory.includes('medicine') || lowerCategory.includes('hospital')) {
                 return "Health";
-            } else if (lowerCategory.includes('education') || lowerCategory.includes('course') || lowerCategory.includes('tuition') || lowerCategory.includes('book') || lowerCategory.includes('college') || lowerCategory.includes('school')) {
+            } else if (lowerCategory.includes('education') || lowerCategory.includes('course') || lowerCategory.includes('tuition') || lowerCategory.includes('book') || lowerCategory.includes('college')) {
                 return "Education";
-            } else if (lowerCategory.includes('travel') || lowerCategory.includes('flight') || lowerCategory.includes('hotel') || lowerCategory.includes('vacation') || lowerCategory.includes('trip') || lowerCategory.includes('tour')) {
+            } else if (lowerCategory.includes('travel') || lowerCategory.includes('flight') || lowerCategory.includes('hotel') || lowerCategory.includes('vacation') || lowerCategory.includes('trip')) {
                 return "Travel";
             } else {
-                return category.charAt(0).toUpperCase() + category.slice(1).toLowerCase();
+                return "Other";
             }
         }
         
-        // Update recent expenses list - FIXED WITH SCROLLBAR
+        // Update recent expenses list with better category display
         function updateRecentExpenses(expenses) {
+            recentExpenses.innerHTML = '';
+            
             // Sort by date (newest first)
             const sortedExpenses = [...expenses].sort((a, b) => {
-                return new Date(b[2]) - new Date(a[2]);
-            });
+                return new Date(b[2]) - new Date(a[2]); // date is at index 2
+            }).slice(0, 5);
             
             if (sortedExpenses.length === 0) {
                 recentExpenses.innerHTML = `
@@ -823,35 +1074,34 @@
                 return;
             }
             
-            let html = '';
-            
-            sortedExpenses.slice(0, 10).forEach(expense => {
+            sortedExpenses.forEach(expense => {
                 // expense structure: [id, user_id, date, category, amount, description]
                 const category = expense[3] || "Other";
                 const description = expense[5] || "Expense";
                 const amount = expense[4] || 0;
                 const date = expense[2] || new Date().toISOString().split('T')[0];
                 
+                const categoryClass = getCategoryClass(category);
                 const normalizedCategory = normalizeCategory(category);
                 const badgeClass = getBadgeClass(normalizedCategory);
                 
-                html += `
-                    <div class="expense-item animate__animated animate__fadeIn">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <span class="badge ${badgeClass} mb-1">${normalizedCategory}</span>
-                                <h6 class="mb-1 fw-bold">${description}</h6>
-                                <small class="text-muted">${formatDate(date)}</small>
-                            </div>
-                            <div class="text-end">
-                                <h6 class="text-danger mb-0 fw-bold">₹${amount.toFixed(2)}</h6>
-                            </div>
+                const expenseItem = document.createElement('div');
+                expenseItem.className = 'expense-item animate__animated animate__fadeIn';
+                expenseItem.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <span class="badge ${badgeClass} mb-1">${normalizedCategory}</span>
+                            <h6 class="mb-1 fw-bold">${description}</h6>
+                            <small class="text-muted">${formatDate(date)}</small>
+                        </div>
+                        <div class="text-end">
+                            <h6 class="text-danger mb-0 fw-bold">₹${amount.toFixed(2)}</h6>
                         </div>
                     </div>
                 `;
+                
+                recentExpenses.appendChild(expenseItem);
             });
-            
-            recentExpenses.innerHTML = html;
         }
         
         // Load chat history from backend
@@ -872,6 +1122,7 @@
                 displayChatHistory(memories);
             } catch (error) {
                 console.error('Error loading chat history:', error);
+                // Don't show error for chat history, it's okay if empty
             }
         }
         
@@ -1001,14 +1252,14 @@
                     }
                 }
                 
-                // Parse the response to extract expense details
-                const expenseDetails = parseExpenseResponse(responseText, text);
-                
-                // Add AI response with detailed message
-                addAIMessage(expenseDetails.detailedMessage);
+                // Add AI response
+                addAIMessage(responseText);
                 
                 // Reload expenses to update sidebar
                 await loadExpenses();
+                
+                // Check for budget alerts after new expense
+                checkBudgetAlertsAfterExpense();
                 
             } catch (error) {
                 console.error('Error sending message:', error);
@@ -1040,86 +1291,6 @@
                 expenseInput.focus();
                 scrollToBottom();
             }
-        }
-        
-        // Parse expense response to create detailed message
-        function parseExpenseResponse(responseText, userInput) {
-            // Default message if parsing fails
-            let detailedMessage = `✅ Expense added successfully!`;
-            
-            try {
-                // Try to extract amount
-                const amountMatch = userInput.match(/₹?\s*(\d+[.,]?\d*)\s*(rs|rupees)?/i);
-                let amount = amountMatch ? amountMatch[1].replace(',', '') : 'some amount';
-                
-                // Try to extract description
-                let description = userInput;
-                
-                // Remove amount from description
-                if (amountMatch) {
-                    description = userInput.replace(amountMatch[0], '').trim();
-                }
-                
-                // Clean up description
-                description = description.replace(/^(spent|bought|paid|purchased)\s+/i, '');
-                description = description.replace(/\s+for\s+$/i, '');
-                description = description || 'item';
-                
-                // Try to extract category from response
-                let category = 'Shopping'; // Default
-                if (responseText.toLowerCase().includes('food') || userInput.toLowerCase().includes('food') || userInput.toLowerCase().includes('lunch') || userInput.toLowerCase().includes('dinner')) {
-                    category = 'Food';
-                } else if (responseText.toLowerCase().includes('transport') || userInput.toLowerCase().includes('taxi') || userInput.toLowerCase().includes('bus') || userInput.toLowerCase().includes('auto')) {
-                    category = 'Transport';
-                } else if (responseText.toLowerCase().includes('electron') || userInput.toLowerCase().includes('laptop') || userInput.toLowerCase().includes('phone')) {
-                    category = 'Electronics';
-                } else if (responseText.toLowerCase().includes('stationary') || userInput.toLowerCase().includes('pen') || userInput.toLowerCase().includes('book')) {
-                    category = 'Stationary';
-                } else if (responseText.toLowerCase().includes('health') || userInput.toLowerCase().includes('medicine')) {
-                    category = 'Health';
-                } else if (responseText.toLowerCase().includes('education')) {
-                    category = 'Education';
-                } else if (responseText.toLowerCase().includes('travel') || userInput.toLowerCase().includes('flight')) {
-                    category = 'Travel';
-                } else if (responseText.toLowerCase().includes('bills')) {
-                    category = 'Bills';
-                } else if (responseText.toLowerCase().includes('entertain')) {
-                    category = 'Entertainment';
-                }
-                
-                // Get today's date
-                const today = new Date();
-                const dateStr = today.toLocaleDateString('en-IN', {
-                    day: 'numeric',
-                    month: 'long',
-                    year: 'numeric'
-                });
-                
-                // Create detailed message
-                detailedMessage = `
-                    ✅ <strong>Expense Added Successfully!</strong><br><br>
-                    
-                    <strong>Details:</strong><br>
-                    • <strong>Item:</strong> ${description}<br>
-                    • <strong>Amount:</strong> ₹${amount}<br>
-                    • <strong>Category:</strong> ${category}<br>
-                    • <strong>Date:</strong> ${dateStr}<br>
-                    • <strong>Status:</strong> Recorded in your expense history
-                    
-                    <div class="mt-2">
-                        <span class="badge ${getBadgeClass(category)}">${category}</span>
-                        <small class="text-muted ms-2">Your expense has been categorized as ${category}</small>
-                    </div>
-                `;
-                
-            } catch (error) {
-                console.error('Error parsing expense response:', error);
-                detailedMessage = `✅ Expense added successfully! "${userInput}" has been recorded.`;
-            }
-            
-            return {
-                detailedMessage: detailedMessage
-            };
         }
         
         // Add user message to chat
@@ -1163,11 +1334,191 @@
                         <div class="text-muted" style="font-size: 0.8rem;">${time}</div>
                     </div>
                 </div>
-                <div>${text}</div>
+                <p class="mb-0">${escapeHtml(text)}</p>
             `;
             
             chatHistory.appendChild(messageDiv);
             scrollToBottom();
+        }
+        
+        // Check budget alerts after new expense
+        async function checkBudgetAlertsAfterExpense() {
+            try {
+                const response = await fetch(`${BACKEND_URL}/expenses?user_id=${USER_ID}`);
+                if (!response.ok) return;
+                
+                const data = await response.json();
+                const expenses = data.expenses || [];
+                checkBudgetAlerts(expenses);
+            } catch (error) {
+                console.error('Error checking budget alerts:', error);
+            }
+        }
+        
+        // Check budget alerts
+        function checkBudgetAlerts(expenses) {
+            if (!expenses || expenses.length === 0) return;
+            
+            // Calculate total
+            let total = 0;
+            expenses.forEach(expense => {
+                total += expense[4] || 0;
+            });
+            
+            // Calculate percentage
+            const percentage = (total / userBudget) * 100;
+            
+            // Check and show alerts based on settings
+            if (budgetAlerts.alertExceeded && percentage >= 100 && !alertExceededShown) {
+                showBudgetAlert('danger', 'Budget Exceeded!', 
+                    `You have exceeded your monthly budget by ₹${(total - userBudget).toFixed(2)}. Consider adjusting your spending.`, true);
+                alertExceededShown = true;
+            } else if (budgetAlerts.alert90 && percentage >= 90 && percentage < 100 && !alert90Shown) {
+                showBudgetAlert('warning', 'Budget Warning (90%)', 
+                    `You've used ${percentage.toFixed(1)}% of your budget. Only ₹${(userBudget - total).toFixed(2)} remaining.`);
+                alert90Shown = true;
+            } else if (budgetAlerts.alert80 && percentage >= 80 && percentage < 90 && !alert80Shown) {
+                showBudgetAlert('info', 'Budget Alert (80%)', 
+                    `You've used ${percentage.toFixed(1)}% of your budget. ₹${(userBudget - total).toFixed(2)} remaining.`);
+                alert80Shown = true;
+            }
+        }
+        
+        // Show budget alert
+        function showBudgetAlert(type, title, message, persistent = false) {
+            const alertContainer = document.getElementById('budget-alert-container');
+            
+            // Clear existing alerts
+            const existingAlerts = alertContainer.querySelectorAll('.budget-alert');
+            if (existingAlerts.length > 2) {
+                existingAlerts[0].remove();
+            }
+            
+            let alertClass, icon, bgColor, textColor;
+            
+            switch(type) {
+                case 'danger':
+                    alertClass = 'alert-danger';
+                    icon = 'bi-exclamation-triangle-fill';
+                    bgColor = '#dc3545';
+                    textColor = 'white';
+                    break;
+                case 'warning':
+                    alertClass = 'alert-warning';
+                    icon = 'bi-exclamation-circle';
+                    bgColor = '#ffc107';
+                    textColor = '#000';
+                    break;
+                case 'info':
+                    alertClass = 'alert-info';
+                    icon = 'bi-info-circle';
+                    bgColor = '#0dcaf0';
+                    textColor = '#000';
+                    break;
+                default:
+                    alertClass = 'alert-success';
+                    icon = 'bi-check-circle';
+                    bgColor = '#198754';
+                    textColor = 'white';
+            }
+            
+            const alertId = 'budget-alert-' + Date.now();
+            const alertHTML = `
+                <div class="alert ${alertClass} budget-alert" 
+                     id="${alertId}" 
+                     style="background-color: ${bgColor}; color: ${textColor}; border-left: 5px solid ${textColor === 'white' ? '#fff' : '#000'};">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center">
+                            <i class="fas ${icon === 'bi-info-circle' ? 'fa-info-circle' : icon === 'bi-exclamation-circle' ? 'fa-exclamation-circle' : 'fa-exclamation-triangle'} alert-icon"></i>
+                            <div>
+                                <h6 class="mb-1 fw-bold">${title}</h6>
+                                <p class="mb-0 small">${message}</p>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-close ${textColor === 'white' ? 'btn-close-white' : ''}" 
+                                onclick="document.getElementById('${alertId}').remove()">
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            alertContainer.insertAdjacentHTML('beforeend', alertHTML);
+            
+            // Auto-remove after some time (unless persistent)
+            if (!persistent) {
+                setTimeout(() => {
+                    const alertElement = document.getElementById(alertId);
+                    if (alertElement) {
+                        alertElement.style.transition = 'all 0.5s ease';
+                        alertElement.style.opacity = '0';
+                        alertElement.style.transform = 'translateX(100%)';
+                        setTimeout(() => {
+                            if (alertElement.parentNode) {
+                                alertElement.remove();
+                            }
+                        }, 500);
+                    }
+                }, 8000);
+            }
+        }
+        
+        // Load budget settings
+        function loadBudgetSettings() {
+            const savedBudget = localStorage.getItem(`budget_${USER_ID}`);
+            if (savedBudget) {
+                userBudget = parseInt(savedBudget);
+                document.getElementById('monthly-budget').value = userBudget;
+            }
+            
+            // Load alert settings
+            document.getElementById('alert-80').checked = budgetAlerts.alert80;
+            document.getElementById('alert-90').checked = budgetAlerts.alert90;
+            document.getElementById('alert-exceeded').checked = budgetAlerts.alertExceeded;
+        }
+        
+        // Show budget settings modal
+        function showBudgetSettings() {
+            const modal = new bootstrap.Modal(document.getElementById('budgetSettingsModal'));
+            modal.show();
+        }
+        
+        // Save budget settings
+        function saveBudgetSettings() {
+            const newBudget = parseInt(document.getElementById('monthly-budget').value);
+            
+            if (isNaN(newBudget) || newBudget < 0) {
+                alert('Please enter a valid budget amount.');
+                return;
+            }
+            
+            userBudget = newBudget;
+            
+            // Save to localStorage
+            localStorage.setItem(`budget_${USER_ID}`, newBudget);
+            
+            // Save alert settings
+            budgetAlerts.alert80 = document.getElementById('alert-80').checked;
+            budgetAlerts.alert90 = document.getElementById('alert-90').checked;
+            budgetAlerts.alertExceeded = document.getElementById('alert-exceeded').checked;
+            
+            localStorage.setItem(`alert_80_${USER_ID}`, budgetAlerts.alert80);
+            localStorage.setItem(`alert_90_${USER_ID}`, budgetAlerts.alert90);
+            localStorage.setItem(`alert_exceeded_${USER_ID}`, budgetAlerts.alertExceeded);
+            
+            // Reset alert tracking
+            alert80Shown = false;
+            alert90Shown = false;
+            alertExceededShown = false;
+            
+            // Reload expenses to update UI
+            loadExpenses();
+            
+            // Show success message
+            showBudgetAlert('success', 'Settings Saved', `Monthly budget set to ₹${newBudget.toLocaleString('en-IN')}`);
+            
+            // Close modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('budgetSettingsModal'));
+            modal.hide();
         }
         
         // Test backend connection
@@ -1178,96 +1529,96 @@
                 if (response.ok) {
                     const data = await response.json();
                     console.log('Backend connection successful:', data);
+                    
+                    // Show success
+                    const successAlert = document.createElement('div');
+                    successAlert.className = 'alert alert-success alert-dismissible fade show';
+                    successAlert.innerHTML = `
+                        <i class="fas fa-check-circle me-2"></i>
+                        Connected to backend successfully!
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    `;
+                    recentExpenses.parentNode.insertBefore(successAlert, recentExpenses);
+                    
                     return true;
                 } else {
                     throw new Error(`HTTP error! Status: ${response.status}`);
                 }
             } catch (error) {
                 console.error('Backend connection test failed:', error);
+                
+                // Show error
+                const errorAlert = document.createElement('div');
+                errorAlert.className = 'alert alert-danger';
+                errorAlert.innerHTML = `
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Connection Error</strong><br>
+                    ${error.message}
+                `;
+                recentExpenses.parentNode.insertBefore(errorAlert, recentExpenses);
+                
                 return false;
             }
         }
         
         // Utility functions
-        function getCategoryCardClass(category) {
-            switch(category.toLowerCase()) {
-                case 'shopping': return 'clothes';
-                case 'food': return 'food';
-                case 'transport': return 'transport';
-                case 'bills': return 'other';
-                case 'entertainment': return 'other';
-                case 'electronics': return 'electronics';
-                case 'stationary': return 'other';
-                case 'health': return 'other';
-                case 'education': return 'other';
-                case 'travel': return 'other';
-                default: return 'other';
-            }
-        }
-        
-        function getCategoryIcon(category) {
-            switch(category.toLowerCase()) {
-                case 'shopping': return 'fa-tshirt';
-                case 'food': return 'fa-utensils';
-                case 'transport': return 'fa-car';
-                case 'bills': return 'fa-file-invoice-dollar';
-                case 'entertainment': return 'fa-film';
-                case 'electronics': return 'fa-laptop';
-                case 'stationary': return 'fa-pen';
-                case 'health': return 'fa-heartbeat';
-                case 'education': return 'fa-graduation-cap';
-                case 'travel': return 'fa-plane';
-                default: return 'fa-shopping-cart';
+        function getCategoryClass(category) {
+            const normalized = normalizeCategory(category);
+            switch(normalized) {
+                case 'Shopping': return 'category-clothes';
+                case 'Food': return 'category-food';
+                case 'Transport': return 'category-transport';
+                case 'Bills': return 'category-bills';
+                case 'Entertainment': return 'category-entertainment';
+                case 'Electronics': return 'category-electronics';
+                case 'Stationary': return 'category-stationary';
+                case 'Health': return 'category-health';
+                case 'Education': return 'category-education';
+                case 'Travel': return 'category-travel';
+                default: return 'category-clothes';
             }
         }
         
         function getBadgeClass(category) {
-            switch(category.toLowerCase()) {
-                case 'shopping': return 'badge-shopping';
-                case 'food': return 'badge-food';
-                case 'transport': return 'badge-transport';
-                case 'bills': return 'badge-bills';
-                case 'entertainment': return 'badge-entertainment';
-                case 'electronics': return 'badge-electronics';
-                case 'stationary': return 'badge-stationary';
-                case 'health': return 'badge-health';
-                case 'education': return 'badge-education';
-                case 'travel': return 'badge-travel';
-                default: return 'badge-other';
+            const normalized = normalizeCategory(category);
+            switch(normalized) {
+                case 'Shopping': return 'bg-primary';
+                case 'Food': return 'bg-success';
+                case 'Transport': return 'bg-warning';
+                case 'Bills': return 'bg-info';
+                case 'Entertainment': return 'bg-purple';
+                case 'Electronics': return 'badge-electronics';
+                case 'Stationary': return 'badge-stationary';
+                case 'Health': return 'badge-health';
+                case 'Education': return 'badge-education';
+                case 'Travel': return 'badge-travel';
+                default: return 'bg-secondary';
             }
         }
         
         function formatDate(dateString) {
-            try {
-                const date = new Date(dateString);
-                const now = new Date();
-                const diffTime = Math.abs(now - date);
-                const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-                
-                if (diffDays === 0) return 'Today';
-                if (diffDays === 1) return 'Yesterday';
-                if (diffDays < 7) return `${diffDays} days ago`;
-                
-                return date.toLocaleDateString('en-IN', {
-                    day: 'numeric',
-                    month: 'short',
-                    year: 'numeric'
-                });
-            } catch (e) {
-                return dateString;
-            }
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffTime = Math.abs(now - date);
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (diffDays === 0) return 'Today';
+            if (diffDays === 1) return 'Yesterday';
+            if (diffDays < 7) return `${diffDays} days ago`;
+            
+            return date.toLocaleDateString('en-IN', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric'
+            });
         }
         
         function formatTime(dateTimeString) {
-            try {
-                const date = new Date(dateTimeString);
-                return date.toLocaleTimeString('en-IN', {
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
-            } catch (e) {
-                return 'Just now';
-            }
+            const date = new Date(dateTimeString);
+            return date.toLocaleTimeString('en-IN', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
         }
         
         function escapeHtml(text) {
