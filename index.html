@@ -321,39 +321,28 @@
             background: #a1a1a1;
         }
         
-        /* Summary card styling */
-        .expense-summary-card {
-            background: linear-gradient(135deg, #ffffff, #f8fafc);
-            border-radius: 12px;
-            padding: 20px;
-            border: 1px solid #e2e8f0;
-            margin-bottom: 10px;
+        /* Firefox scrollbar */
+        .chat-history, .sidebar, .recent-expenses-container {
+            scrollbar-width: thin;
+            scrollbar-color: #c1c1c1 #f1f1f1;
         }
         
-        .category-item {
-            margin-bottom: 15px;
+        /* Ensure proper layout */
+        .row.h-100 {
+            margin: 0;
+            height: 100%;
         }
         
-        .category-item .progress {
-            height: 8px;
-            border-radius: 4px;
+        .col-lg-4, .col-lg-8, .col-md-5, .col-md-7 {
+            padding: 0;
+            height: 100%;
         }
         
-        .recent-transactions-list {
-            max-height: 200px;
-            overflow-y: auto;
+        .p-0 {
+            height: 100%;
         }
         
-        .transaction-item {
-            padding: 10px;
-            border-bottom: 1px solid #f1f1f1;
-        }
-        
-        .transaction-item:last-child {
-            border-bottom: none;
-        }
-        
-        /* Badge colors */
+        /* Category badge colors */
         .badge-shopping { background-color: #4361ee !important; color: white; }
         .badge-food { background-color: #4cc9f0 !important; color: white; }
         .badge-transport { background-color: #f8961e !important; color: white; }
@@ -365,14 +354,6 @@
         .badge-education { background-color: #264653 !important; color: white; }
         .badge-travel { background-color: #9d4edd !important; color: white; }
         .badge-other { background-color: #6c757d !important; color: white; }
-        
-        /* Expense confirmation styling */
-        .expense-confirmation {
-            background: linear-gradient(135deg, #f0fff4, #ffffff);
-            border-radius: 12px;
-            padding: 20px;
-            border: 1px solid #c6f6d5;
-        }
         
         /* Responsive adjustments */
         @media (max-width: 768px) {
@@ -415,19 +396,30 @@
             line-height: 1.5;
         }
         
-        .ai-message ul, .ai-message ol {
-            padding-left: 20px;
-            margin-bottom: 10px;
-        }
-        
-        .ai-message li {
-            margin-bottom: 5px;
+        /* Alert styling inside messages */
+        .ai-message .alert {
+            margin-top: 10px;
+            margin-bottom: 0;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 0.9rem;
         }
         
         /* Ensure chat scrolls to bottom on new messages */
         .chat-history {
             display: flex;
             flex-direction: column;
+        }
+        
+        /* Budget progress bar in navbar */
+        .navbar-progress {
+            width: 150px;
+            margin-right: 15px;
+        }
+        
+        .navbar-progress .progress {
+            height: 4px;
+            margin-top: 5px;
         }
         
         /* Dashboard button in navbar */
@@ -482,6 +474,33 @@
                     <div class="row" id="category-cards">
                         <!-- Categories will be dynamically added here -->
                         <div class="col-6 mb-3">
+                            <div class="stats-card clothes">
+                                <h6><i class="fas fa-tshirt me-2"></i>Shopping</h6>
+                                <h4 id="shopping-total">₹0</h4>
+                                <div class="progress">
+                                    <div class="progress-bar" id="shopping-progress" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="stats-card food">
+                                <h6><i class="fas fa-utensils me-2"></i>Food</h6>
+                                <h4 id="food-total">₹0</h4>
+                                <div class="progress">
+                                    <div class="progress-bar" id="food-progress" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="stats-card transport">
+                                <h6><i class="fas fa-car me-2"></i>Transport</h6>
+                                <h4 id="transport-total">₹0</h4>
+                                <div class="progress">
+                                    <div class="progress-bar" id="transport-progress" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-3">
                             <div class="stats-card total">
                                 <h6><i class="fas fa-wallet me-2"></i>Total</h6>
                                 <h4 id="overall-total">₹0</h4>
@@ -510,7 +529,7 @@
                         </div>
                         <div class="mt-2 d-flex justify-content-between">
                             <small class="text-muted">Press Enter to send, Shift+Enter for new line</small>
-                            <small class="text-muted"><i class="fas fa-lightbulb me-1"></i>Try: "Summarize my expenses this month"</small>
+                            <small class="text-muted"><i class="fas fa-lightbulb me-1"></i>Try: "Spent ₹120 on groceries"</small>
                         </div>
                     </div>
                 </div>
@@ -573,6 +592,9 @@
             loadExpenses();
             loadChatHistory();
             
+            // Test backend connection
+            testBackendConnection();
+            
             // Focus on input field
             setTimeout(() => {
                 expenseInput.focus();
@@ -594,19 +616,15 @@
                         </div>
                     </div>
                     <p>Hello! I'm your AI expense tracker. Tell me about your expenses in natural language, like <em>"Today I bought a t-shirt for ₹400"</em> or <em>"Spent ₹250 on lunch"</em>, and I'll categorize and record them for you.</p>
-                    <p><strong>You can also ask for summaries:</strong></p>
-                    <ul>
-                        <li>"Summarize my expenses this month"</li>
-                        <li>"How much did I spend on food?"</li>
-                        <li>"Show me my spending in December"</li>
-                        <li>"What's my total spending?"</li>
-                    </ul>
                     <div class="mt-2">
                         <span class="expense-category category-clothes">Shopping</span>
                         <span class="expense-category category-food">Food</span>
                         <span class="expense-category category-transport">Transport</span>
                         <span class="expense-category category-electronics">Electronics</span>
                         <span class="expense-category category-stationary">Stationary</span>
+                        <span class="expense-category category-health">Health</span>
+                        <span class="expense-category category-education">Education</span>
+                        <span class="expense-category category-travel">Travel</span>
                     </div>
                 </div>
             `;
@@ -622,7 +640,7 @@
             }, 100);
         }
         
-        // Load expenses from backend
+        // Load expenses from backend - FIXED FOR OLD DATA
         async function loadExpenses() {
             try {
                 console.log('Fetching expenses from:', `${BACKEND_URL}/expenses?user_id=${USER_ID}`);
@@ -722,17 +740,18 @@
                 total += categoryData[category].total;
             }
             
-            // Clear existing category cards
+            // Clear existing category cards (keep the total card)
+            const totalCard = categoryCards.querySelector('.stats-card.total').parentElement;
             categoryCards.innerHTML = '';
             
             // Sort categories by total (highest first)
             const sortedCategories = Object.entries(categoryData)
                 .sort(([, a], [, b]) => b.total - a.total);
             
-            // Add category cards (max 4 plus total)
+            // Add category cards (max 5 plus total)
             let cardCount = 0;
             sortedCategories.forEach(([category, data]) => {
-                if (cardCount < 4) {
+                if (cardCount < 5) {
                     const percentage = total > 0 ? (data.total / total) * 100 : 0;
                     const categoryClass = getCategoryCardClass(category);
                     const icon = getCategoryIcon(category);
@@ -754,41 +773,31 @@
                 }
             });
             
-            // Add total card
-            const totalHtml = `
-                <div class="col-6 mb-3">
-                    <div class="stats-card total">
-                        <h6><i class="fas fa-wallet me-2"></i>Total</h6>
-                        <h4 id="overall-total">₹${total.toFixed(2)}</h4>
-                        <small class="text-muted">${sortedCategories.length} categories</small>
-                    </div>
-                </div>
-            `;
-            
-            categoryCards.insertAdjacentHTML('beforeend', totalHtml);
+            // Add total card at the end
+            categoryCards.appendChild(totalCard);
         }
         
-        // Enhanced category normalization
+        // Enhanced category normalization with more categories
         function normalizeCategory(category) {
             const lowerCategory = category.toLowerCase();
             
-            if (lowerCategory.includes('clothes') || lowerCategory.includes('clothing') || lowerCategory.includes('shirt') || lowerCategory.includes('shopping') || lowerCategory.includes('sari') || lowerCategory.includes('dress') || lowerCategory.includes('jeans') || lowerCategory.includes('t-shirt')) {
+            if (lowerCategory.includes('clothes') || lowerCategory.includes('clothing') || lowerCategory.includes('shirt') || lowerCategory.includes('shopping') || lowerCategory.includes('sari') || lowerCategory.includes('dress') || lowerCategory.includes('jeans')) {
                 return "Shopping";
-            } else if (lowerCategory.includes('food') || lowerCategory.includes('dining') || lowerCategory.includes('lunch') || lowerCategory.includes('dinner') || lowerCategory.includes('grocer') || lowerCategory.includes('restaurant') || lowerCategory.includes('meal') || lowerCategory.includes('breakfast') || lowerCategory.includes('snack')) {
+            } else if (lowerCategory.includes('food') || lowerCategory.includes('dining') || lowerCategory.includes('lunch') || lowerCategory.includes('dinner') || lowerCategory.includes('grocer') || lowerCategory.includes('restaurant') || lowerCategory.includes('meal') || lowerCategory.includes('breakfast')) {
                 return "Food";
-            } else if (lowerCategory.includes('transport') || lowerCategory.includes('travel') || lowerCategory.includes('taxi') || lowerCategory.includes('bus') || lowerCategory.includes('fuel') || lowerCategory.includes('auto') || lowerCategory.includes('cab') || lowerCategory.includes('metro') || lowerCategory.includes('uber')) {
+            } else if (lowerCategory.includes('transport') || lowerCategory.includes('travel') || lowerCategory.includes('taxi') || lowerCategory.includes('bus') || lowerCategory.includes('fuel') || lowerCategory.includes('auto') || lowerCategory.includes('cab') || lowerCategory.includes('metro')) {
                 return "Transport";
-            } else if (lowerCategory.includes('bills') || lowerCategory.includes('utilities') || lowerCategory.includes('electric') || lowerCategory.includes('water') || lowerCategory.includes('rent') || lowerCategory.includes('internet') || lowerCategory.includes('phone') || lowerCategory.includes('wifi') || lowerCategory.includes('electricity')) {
+            } else if (lowerCategory.includes('bills') || lowerCategory.includes('utilities') || lowerCategory.includes('electric') || lowerCategory.includes('water') || lowerCategory.includes('rent') || lowerCategory.includes('internet') || lowerCategory.includes('phone') || lowerCategory.includes('wifi')) {
                 return "Bills";
-            } else if (lowerCategory.includes('entertain') || lowerCategory.includes('movie') || lowerCategory.includes('game') || lowerCategory.includes('concert') || lowerCategory.includes('streaming') || lowerCategory.includes('netflix') || lowerCategory.includes('cinema')) {
+            } else if (lowerCategory.includes('entertain') || lowerCategory.includes('movie') || lowerCategory.includes('game') || lowerCategory.includes('concert') || lowerCategory.includes('streaming') || lowerCategory.includes('netflix')) {
                 return "Entertainment";
-            } else if (lowerCategory.includes('electron') || lowerCategory.includes('phone') || lowerCategory.includes('laptop') || lowerCategory.includes('computer') || lowerCategory.includes('smartphone') || lowerCategory.includes('tablet') || lowerCategory.includes('charger') || lowerCategory.includes('headphone')) {
+            } else if (lowerCategory.includes('electron') || lowerCategory.includes('phone') || lowerCategory.includes('laptop') || lowerCategory.includes('computer') || lowerCategory.includes('smartphone') || lowerCategory.includes('tablet') || lowerCategory.includes('charger')) {
                 return "Electronics";
-            } else if (lowerCategory.includes('stationary') || lowerCategory.includes('stationery') || lowerCategory.includes('pen') || lowerCategory.includes('book') || lowerCategory.includes('paper') || lowerCategory.includes('notebook') || lowerCategory.includes('pencil')) {
+            } else if (lowerCategory.includes('stationary') || lowerCategory.includes('pen') || lowerCategory.includes('book') || lowerCategory.includes('paper') || lowerCategory.includes('notebook') || lowerCategory.includes('pencil')) {
                 return "Stationary";
-            } else if (lowerCategory.includes('health') || lowerCategory.includes('medical') || lowerCategory.includes('doctor') || lowerCategory.includes('medicine') || lowerCategory.includes('hospital') || lowerCategory.includes('pharmacy') || lowerCategory.includes('checkup')) {
+            } else if (lowerCategory.includes('health') || lowerCategory.includes('medical') || lowerCategory.includes('doctor') || lowerCategory.includes('medicine') || lowerCategory.includes('hospital') || lowerCategory.includes('pharmacy')) {
                 return "Health";
-            } else if (lowerCategory.includes('education') || lowerCategory.includes('course') || lowerCategory.includes('tuition') || lowerCategory.includes('book') || lowerCategory.includes('college') || lowerCategory.includes('school') || lowerCategory.includes('tuition')) {
+            } else if (lowerCategory.includes('education') || lowerCategory.includes('course') || lowerCategory.includes('tuition') || lowerCategory.includes('book') || lowerCategory.includes('college') || lowerCategory.includes('school')) {
                 return "Education";
             } else if (lowerCategory.includes('travel') || lowerCategory.includes('flight') || lowerCategory.includes('hotel') || lowerCategory.includes('vacation') || lowerCategory.includes('trip') || lowerCategory.includes('tour')) {
                 return "Travel";
@@ -797,7 +806,7 @@
             }
         }
         
-        // Update recent expenses list
+        // Update recent expenses list - FIXED WITH SCROLLBAR
         function updateRecentExpenses(expenses) {
             // Sort by date (newest first)
             const sortedExpenses = [...expenses].sort((a, b) => {
@@ -817,6 +826,7 @@
             let html = '';
             
             sortedExpenses.slice(0, 10).forEach(expense => {
+                // expense structure: [id, user_id, date, category, amount, description]
                 const category = expense[3] || "Other";
                 const description = expense[5] || "Expense";
                 const amount = expense[4] || 0;
@@ -872,6 +882,7 @@
             // Group memories by date
             const memoriesByDate = {};
             memories.forEach(memory => {
+                // memory structure: [id, user_id, role, memory_text, timestamp]
                 const date = memory[4] ? memory[4].split('T')[0] : new Date().toISOString().split('T')[0];
                 if (!memoriesByDate[date]) {
                     memoriesByDate[date] = [];
@@ -886,7 +897,7 @@
                 const isToday = date === new Date().toISOString().split('T')[0];
                 const dateHeader = isToday ? 'Today' : formatDate(date);
                 
-                // Add date header if not today
+                // Add date header if not today (today already has header)
                 if (!isToday) {
                     const headerDiv = document.createElement('div');
                     headerDiv.className = 'date-header';
@@ -896,9 +907,9 @@
                 
                 // Add messages for this date
                 memoriesByDate[date].forEach(memory => {
-                    const role = memory[2];
-                    const content = memory[3];
-                    const timestamp = memory[4];
+                    const role = memory[2]; // 'user' or 'assistant'
+                    const content = memory[3]; // message content
+                    const timestamp = memory[4]; // timestamp
                     
                     if (role === 'user') {
                         addUserMessage(content, timestamp);
@@ -957,12 +968,44 @@
                 const data = await response.json();
                 console.log('Chatbot response data:', data);
                 
-                // Process the response
-                const responseText = data.response || "";
-                const formattedResponse = await formatChatbotResponse(responseText, text);
+                // Handle different response formats
+                let responseText = data.response || "Expense processed successfully!";
                 
-                // Add AI response
-                addAIMessage(formattedResponse);
+                if (typeof responseText === 'object') {
+                    if (responseText.text) {
+                        responseText = responseText.text;
+                    } else if (responseText.content) {
+                        responseText = responseText.content;
+                    } else if (responseText.output) {
+                        responseText = responseText.output;
+                    } else {
+                        responseText = JSON.stringify(responseText);
+                    }
+                }
+                
+                // Clean up response
+                if (responseText.includes('[object') || responseText.includes('[Object')) {
+                    try {
+                        const parsed = JSON.parse(responseText);
+                        if (parsed.text) {
+                            responseText = parsed.text;
+                        } else if (parsed.content) {
+                            responseText = parsed.content;
+                        }
+                    } catch (e) {
+                        // If parsing fails, try to extract text using regex
+                        const textMatch = responseText.match(/"text"\s*:\s*"([^"]+)"/);
+                        if (textMatch) {
+                            responseText = textMatch[1];
+                        }
+                    }
+                }
+                
+                // Parse the response to extract expense details
+                const expenseDetails = parseExpenseResponse(responseText, text);
+                
+                // Add AI response with detailed message
+                addAIMessage(expenseDetails.detailedMessage);
                 
                 // Reload expenses to update sidebar
                 await loadExpenses();
@@ -973,6 +1016,7 @@
                 // Show user-friendly error message
                 let userErrorMessage = `Sorry, I encountered an error: ${error.message}.`;
                 
+                // Suggest common fixes for 422 error
                 if (error.message.includes('422')) {
                     userErrorMessage = `
                         <p>I couldn't process that format. Try these examples:</p>
@@ -981,7 +1025,8 @@
                             <li>"Spent ₹150 on lunch"</li>
                             <li>"Paid ₹500 for groceries today"</li>
                             <li>"Taxi ride cost ₹300"</li>
-                            <li>"Summarize my expenses this month"</li>
+                            <li>"Bought a laptop for ₹50,000"</li>
+                            <li>"Stationary items cost ₹300"</li>
                         </ul>
                     `;
                 }
@@ -997,407 +1042,84 @@
             }
         }
         
-        // Format chatbot response
-        async function formatChatbotResponse(responseText, userInput) {
-            console.log("Processing response for:", userInput);
+        // Parse expense response to create detailed message
+        function parseExpenseResponse(responseText, userInput) {
+            // Default message if parsing fails
+            let detailedMessage = `✅ Expense added successfully!`;
             
-            // Clean the response
-            let formatted = responseText.replace(/\\n/g, '\n').replace(/\\"/g, '"').trim();
-            
-            // Check what type of request this is
-            const isSummary = isSummarizationRequest(userInput);
-            const isExpense = isExpenseAdditionRequest(userInput);
-            
-            if (isSummary) {
-                // Generate a proper summary from actual data
-                return await generateExpenseSummary(userInput);
-            } else if (isExpense) {
-                // Format expense addition response
-                return formatExpenseAddition(formatted, userInput);
-            } else {
-                // General response
-                return formatGeneralResponse(formatted);
-            }
-        }
-        
-        // Check if it's a summarization request
-        function isSummarizationRequest(userInput) {
-            const summaryKeywords = [
-                'summarize', 'summary', 'summarise', 'summaries',
-                'how much', 'total spent', 'total expense',
-                'show my expenses', 'view expenses', 'list expenses',
-                'expense report', 'spending report', 'expense history',
-                'monthly expenses', 'weekly expenses', 'daily expenses',
-                'what did i spend', 'my spending', 'expense overview',
-                'breakdown', 'category breakdown', 'by category',
-                'top expenses', 'highest expense', 'most spent'
-            ];
-            
-            const input = userInput.toLowerCase();
-            return summaryKeywords.some(keyword => input.includes(keyword));
-        }
-        
-        // Check if it's an expense addition request
-        function isExpenseAdditionRequest(userInput) {
-            const expenseKeywords = [
-                '₹', 'rs', 'rupee', 'rupees',
-                'bought', 'spent', 'paid', 'purchased',
-                'cost', 'expense of', 'for ₹', 'for rs',
-                'for rupees', 'on lunch', 'on dinner',
-                'on groceries', 'on taxi', 'on bus'
-            ];
-            
-            const amountPattern = /\d+[.,]?\d*\s*(rs|rupees|₹)/i;
-            const input = userInput.toLowerCase();
-            
-            return expenseKeywords.some(keyword => input.includes(keyword)) || 
-                   amountPattern.test(userInput);
-        }
-        
-        // Generate expense summary from actual data
-        async function generateExpenseSummary(userInput) {
             try {
-                // Fetch expenses from backend
-                const response = await fetch(`${BACKEND_URL}/expenses?user_id=${USER_ID}`);
-                if (!response.ok) {
-                    return createNoExpensesSummary();
+                // Try to extract amount
+                const amountMatch = userInput.match(/₹?\s*(\d+[.,]?\d*)\s*(rs|rupees)?/i);
+                let amount = amountMatch ? amountMatch[1].replace(',', '') : 'some amount';
+                
+                // Try to extract description
+                let description = userInput;
+                
+                // Remove amount from description
+                if (amountMatch) {
+                    description = userInput.replace(amountMatch[0], '').trim();
                 }
                 
-                const data = await response.json();
-                const expenses = data.expenses || [];
+                // Clean up description
+                description = description.replace(/^(spent|bought|paid|purchased)\s+/i, '');
+                description = description.replace(/\s+for\s+$/i, '');
+                description = description || 'item';
                 
-                if (expenses.length === 0) {
-                    return createNoExpensesSummary();
+                // Try to extract category from response
+                let category = 'Shopping'; // Default
+                if (responseText.toLowerCase().includes('food') || userInput.toLowerCase().includes('food') || userInput.toLowerCase().includes('lunch') || userInput.toLowerCase().includes('dinner')) {
+                    category = 'Food';
+                } else if (responseText.toLowerCase().includes('transport') || userInput.toLowerCase().includes('taxi') || userInput.toLowerCase().includes('bus') || userInput.toLowerCase().includes('auto')) {
+                    category = 'Transport';
+                } else if (responseText.toLowerCase().includes('electron') || userInput.toLowerCase().includes('laptop') || userInput.toLowerCase().includes('phone')) {
+                    category = 'Electronics';
+                } else if (responseText.toLowerCase().includes('stationary') || userInput.toLowerCase().includes('pen') || userInput.toLowerCase().includes('book')) {
+                    category = 'Stationary';
+                } else if (responseText.toLowerCase().includes('health') || userInput.toLowerCase().includes('medicine')) {
+                    category = 'Health';
+                } else if (responseText.toLowerCase().includes('education')) {
+                    category = 'Education';
+                } else if (responseText.toLowerCase().includes('travel') || userInput.toLowerCase().includes('flight')) {
+                    category = 'Travel';
+                } else if (responseText.toLowerCase().includes('bills')) {
+                    category = 'Bills';
+                } else if (responseText.toLowerCase().includes('entertain')) {
+                    category = 'Entertainment';
                 }
                 
-                return createDetailedSummary(expenses, userInput);
+                // Get today's date
+                const today = new Date();
+                const dateStr = today.toLocaleDateString('en-IN', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric'
+                });
+                
+                // Create detailed message
+                detailedMessage = `
+                    ✅ <strong>Expense Added Successfully!</strong><br><br>
+                    
+                    <strong>Details:</strong><br>
+                    • <strong>Item:</strong> ${description}<br>
+                    • <strong>Amount:</strong> ₹${amount}<br>
+                    • <strong>Category:</strong> ${category}<br>
+                    • <strong>Date:</strong> ${dateStr}<br>
+                    • <strong>Status:</strong> Recorded in your expense history
+                    
+                    <div class="mt-2">
+                        <span class="badge ${getBadgeClass(category)}">${category}</span>
+                        <small class="text-muted ms-2">Your expense has been categorized as ${category}</small>
+                    </div>
+                `;
                 
             } catch (error) {
-                console.error("Error generating summary:", error);
-                return createDefaultSummary();
-            }
-        }
-        
-        // Create detailed expense summary
-        function createDetailedSummary(expenses, userInput) {
-            // Calculate totals
-            let total = 0;
-            const categoryTotals = {};
-            const recentExpenses = [];
-            const today = new Date();
-            
-            // Determine time period
-            let timePeriod = "All Time";
-            const input = userInput.toLowerCase();
-            if (input.includes('today')) {
-                timePeriod = "Today";
-                const todayStr = today.toISOString().split('T')[0];
-                expenses = expenses.filter(exp => exp[2] === todayStr);
-            } else if (input.includes('yesterday')) {
-                timePeriod = "Yesterday";
-                const yesterday = new Date(today);
-                yesterday.setDate(yesterday.getDate() - 1);
-                const yesterdayStr = yesterday.toISOString().split('T')[0];
-                expenses = expenses.filter(exp => exp[2] === yesterdayStr);
-            } else if (input.includes('this week')) {
-                timePeriod = "This Week";
-                const weekAgo = new Date(today);
-                weekAgo.setDate(weekAgo.getDate() - 7);
-                const weekAgoStr = weekAgo.toISOString().split('T')[0];
-                expenses = expenses.filter(exp => exp[2] >= weekAgoStr);
-            } else if (input.includes('this month')) {
-                timePeriod = "This Month";
-                const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-                const firstDayStr = firstDay.toISOString().split('T')[0];
-                expenses = expenses.filter(exp => exp[2] >= firstDayStr);
-            } else if (input.includes('last month')) {
-                timePeriod = "Last Month";
-                const firstDayLastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-                const lastDayLastMonth = new Date(today.getFullYear(), today.getMonth(), 0);
-                const firstDayStr = firstDayLastMonth.toISOString().split('T')[0];
-                const lastDayStr = lastDayLastMonth.toISOString().split('T')[0];
-                expenses = expenses.filter(exp => exp[2] >= firstDayStr && exp[2] <= lastDayStr);
-            } else if (input.includes('this year')) {
-                timePeriod = "This Year";
-                const firstDayYear = new Date(today.getFullYear(), 0, 1);
-                const firstDayStr = firstDayYear.toISOString().split('T')[0];
-                expenses = expenses.filter(exp => exp[2] >= firstDayStr);
+                console.error('Error parsing expense response:', error);
+                detailedMessage = `✅ Expense added successfully! "${userInput}" has been recorded.`;
             }
             
-            // Process filtered expenses
-            expenses.forEach(expense => {
-                const amount = expense[4] || 0;
-                const category = expense[3] || 'Other';
-                const description = expense[5] || 'Expense';
-                const date = expense[2];
-                
-                total += amount;
-                
-                // Category totals
-                const normalizedCategory = normalizeCategory(category);
-                if (!categoryTotals[normalizedCategory]) {
-                    categoryTotals[normalizedCategory] = 0;
-                }
-                categoryTotals[normalizedCategory] += amount;
-                
-                // Recent expenses (last 5)
-                recentExpenses.push({
-                    description,
-                    amount,
-                    category: normalizedCategory,
-                    date
-                });
-            });
-            
-            // Sort categories by amount
-            const sortedCategories = Object.entries(categoryTotals)
-                .sort(([, a], [, b]) => b - a);
-            
-            // Sort recent expenses by date (newest first)
-            recentExpenses.sort((a, b) => new Date(b.date) - new Date(a.date));
-            
-            // Create summary HTML
-            let summaryHTML = `
-                <div class="expense-summary-card">
-                    <div class="d-flex align-items-center mb-3">
-                        <div class="category-icon bg-primary text-white me-3">
-                            <i class="fas fa-chart-pie"></i>
-                        </div>
-                        <div>
-                            <h5 class="mb-0 fw-bold">📊 Expense Summary</h5>
-                            <small class="text-muted">${timePeriod} • ${expenses.length} transactions</small>
-                        </div>
-                    </div>
-                    
-                    <!-- Total Spending -->
-                    <div class="total-spending mb-4">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <small class="text-muted">Total Spent</small>
-                                <h3 class="mb-0 fw-bold text-primary">₹${total.toFixed(2)}</h3>
-                            </div>
-                            <div class="text-end">
-                                <small class="text-muted">Average per transaction</small>
-                                <div class="fw-bold">₹${expenses.length > 0 ? (total / expenses.length).toFixed(2) : '0.00'}</div>
-                            </div>
-                        </div>
-                    </div>
-            `;
-            
-            // Category Breakdown
-            if (sortedCategories.length > 0) {
-                summaryHTML += `
-                    <div class="category-breakdown mb-4">
-                        <h6 class="fw-bold mb-3">📈 Category Breakdown</h6>
-                `;
-                
-                sortedCategories.forEach(([category, amount]) => {
-                    const percentage = total > 0 ? ((amount / total) * 100).toFixed(1) : 0;
-                    const badgeClass = getBadgeClass(category);
-                    
-                    summaryHTML += `
-                        <div class="category-item mb-2">
-                            <div class="d-flex justify-content-between align-items-center mb-1">
-                                <div class="d-flex align-items-center">
-                                    <span class="badge ${badgeClass} me-2">${category}</span>
-                                    <small class="text-muted">${percentage}%</small>
-                                </div>
-                                <div class="fw-bold">₹${amount.toFixed(2)}</div>
-                            </div>
-                            <div class="progress" style="height: 6px;">
-                                <div class="progress-bar" style="width: ${percentage}%"></div>
-                            </div>
-                        </div>
-                    `;
-                });
-                
-                summaryHTML += `</div>`;
-            }
-            
-            // Recent Transactions
-            if (recentExpenses.length > 0) {
-                summaryHTML += `
-                    <div class="recent-transactions mb-3">
-                        <h6 class="fw-bold mb-3">🕒 Recent Transactions</h6>
-                        <div class="recent-transactions-list">
-                `;
-                
-                recentExpenses.slice(0, 5).forEach((exp, index) => {
-                    const badgeClass = getBadgeClass(exp.category);
-                    summaryHTML += `
-                        <div class="transaction-item">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <span class="badge ${badgeClass} me-2">${exp.category}</span>
-                                    <small>${exp.description}</small>
-                                </div>
-                                <div class="text-end">
-                                    <div class="fw-bold text-danger">₹${exp.amount.toFixed(2)}</div>
-                                    <small class="text-muted">${formatDate(exp.date)}</small>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                });
-                
-                summaryHTML += `
-                        </div>
-                    </div>
-                `;
-            }
-            
-            // Insights
-            summaryHTML += `
-                <div class="insights">
-                    <h6 class="fw-bold mb-3">💡 Insights</h6>
-                    <ul class="mb-0">
-                        <li>Total of <strong>${expenses.length}</strong> transactions in ${timePeriod.toLowerCase()}</li>
-                        <li>Average spending: <strong>₹${expenses.length > 0 ? (total / expenses.length).toFixed(2) : '0.00'}</strong> per transaction</li>
-                        ${sortedCategories.length > 0 ? `<li>Top category: <strong>${sortedCategories[0][0]}</strong> (₹${sortedCategories[0][1].toFixed(2)})</li>` : ''}
-                        ${total > 0 ? `<li>You've spent an average of <strong>₹${(total / 30).toFixed(2)}</strong> per day</li>` : ''}
-                    </ul>
-                </div>
-            `;
-            
-            summaryHTML += `</div>`;
-            return summaryHTML;
-        }
-        
-        // Format expense addition response
-        function formatExpenseAddition(responseText, userInput) {
-            // Extract details from user input
-            const amountMatch = userInput.match(/₹?\s*(\d+[.,]?\d*)\s*(rs|rupees)?/i);
-            let amount = amountMatch ? amountMatch[1].replace(',', '') : '0';
-            
-            // Extract description
-            let description = userInput;
-            if (amountMatch) {
-                description = userInput.replace(amountMatch[0], '').trim();
-            }
-            description = description.replace(/^(spent|bought|paid|purchased)\s+/i, '');
-            description = description.replace(/\s+for\s+$/i, '');
-            description = description || 'item';
-            
-            // Guess category
-            let category = 'Shopping';
-            if (userInput.toLowerCase().includes('food') || userInput.toLowerCase().includes('lunch') || 
-                userInput.toLowerCase().includes('dinner') || userInput.toLowerCase().includes('grocer')) {
-                category = 'Food';
-            } else if (userInput.toLowerCase().includes('taxi') || userInput.toLowerCase().includes('bus') || 
-                      userInput.toLowerCase().includes('auto') || userInput.toLowerCase().includes('transport')) {
-                category = 'Transport';
-            } else if (userInput.toLowerCase().includes('laptop') || userInput.toLowerCase().includes('phone') || 
-                      userInput.toLowerCase().includes('electron')) {
-                category = 'Electronics';
-            } else if (userInput.toLowerCase().includes('stationary') || userInput.toLowerCase().includes('pen') || 
-                      userInput.toLowerCase().includes('book') || userInput.toLowerCase().includes('paper')) {
-                category = 'Stationary';
-            } else if (userInput.toLowerCase().includes('health') || userInput.toLowerCase().includes('medicine')) {
-                category = 'Health';
-            } else if (userInput.toLowerCase().includes('education')) {
-                category = 'Education';
-            } else if (userInput.toLowerCase().includes('travel') || userInput.toLowerCase().includes('flight')) {
-                category = 'Travel';
-            } else if (userInput.toLowerCase().includes('bills')) {
-                category = 'Bills';
-            } else if (userInput.toLowerCase().includes('entertain')) {
-                category = 'Entertainment';
-            }
-            
-            const badgeClass = getBadgeClass(category);
-            const today = new Date();
-            const dateStr = today.toLocaleDateString('en-IN', {
-                weekday: 'long',
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric'
-            });
-            
-            return `
-                <div class="expense-confirmation">
-                    <div class="d-flex align-items-center mb-3">
-                        <div class="category-icon bg-success text-white me-3">
-                            <i class="fas fa-check-circle"></i>
-                        </div>
-                        <div>
-                            <h5 class="mb-0 fw-bold">✅ Expense Added Successfully!</h5>
-                            <small class="text-muted">${dateStr}</small>
-                        </div>
-                    </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-6">
-                            <div class="mb-2">
-                                <small class="text-muted">Item</small>
-                                <p class="mb-0 fw-bold">${description}</p>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="mb-2">
-                                <small class="text-muted">Amount</small>
-                                <p class="mb-0 fw-bold text-danger">₹${amount || '0.00'}</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="row mb-4">
-                        <div class="col-6">
-                            <div class="mb-2">
-                                <small class="text-muted">Category</small>
-                                <p class="mb-0">
-                                    <span class="badge ${badgeClass}">${category}</span>
-                                </p>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="mb-2">
-                                <small class="text-muted">Status</small>
-                                <p class="mb-0 text-success">
-                                    <i class="fas fa-check-circle me-1"></i>Recorded
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="alert alert-success mb-0">
-                        <i class="fas fa-info-circle me-2"></i>
-                        This expense has been added to your history and will appear in your dashboard.
-                    </div>
-                </div>
-            `;
-        }
-        
-        // Format general response
-        function formatGeneralResponse(responseText) {
-            return responseText.replace(/\n/g, '<br>');
-        }
-        
-        // Create default summary for errors
-        function createDefaultSummary() {
-            return `
-                <div class="alert alert-info">
-                    <i class="fas fa-chart-pie me-2"></i>
-                    <strong>Expense Summary</strong><br>
-                    I'll fetch your expense data and provide a detailed summary. 
-                    Please try asking again in a moment.
-                </div>
-            `;
-        }
-        
-        // Create no expenses summary
-        function createNoExpensesSummary() {
-            return `
-                <div class="alert alert-info">
-                    <i class="fas fa-chart-pie me-2"></i>
-                    <strong>No Expenses Found</strong><br>
-                    You haven't recorded any expenses yet. Try adding one by saying something like:
-                    <ul class="mt-2 mb-0">
-                        <li>"Bought lunch for ₹200"</li>
-                        <li>"Spent ₹500 on groceries"</li>
-                        <li>"Paid ₹300 for taxi"</li>
-                    </ul>
-                </div>
-            `;
+            return {
+                detailedMessage: detailedMessage
+            };
         }
         
         // Add user message to chat
@@ -1446,6 +1168,24 @@
             
             chatHistory.appendChild(messageDiv);
             scrollToBottom();
+        }
+        
+        // Test backend connection
+        async function testBackendConnection() {
+            try {
+                console.log('Testing connection to:', BACKEND_URL);
+                const response = await fetch(`${BACKEND_URL}/`);
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Backend connection successful:', data);
+                    return true;
+                } else {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+            } catch (error) {
+                console.error('Backend connection test failed:', error);
+                return false;
+            }
         }
         
         // Utility functions
@@ -1561,6 +1301,11 @@
             this.style.height = 'auto';
             const newHeight = Math.min(this.scrollHeight, 150);
             this.style.height = newHeight + 'px';
+            
+            // Adjust chat history height when textarea expands
+            const chatContainer = document.querySelector('.chat-container');
+            const inputHeight = this.offsetHeight + 40; // 40px for padding/margins
+            chatHistory.style.maxHeight = `calc(100% - ${inputHeight}px)`;
         });
         
         // Initialize textarea height
