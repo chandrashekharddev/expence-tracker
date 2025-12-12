@@ -1010,157 +1010,168 @@
         }
         
         // Send expense message to backend
-        async function sendExpenseMessage() {
-            const text = expenseInput.value.trim();
-            if (!text) return;
-            
-            // Disable input during processing
-            expenseInput.disabled = true;
-            sendButton.disabled = true;
-            expenseInput.classList.add('loading');
-            
-            // Add user message to chat
-            addUserMessage(text);
-            
-            // Clear input
-            expenseInput.value = '';
-            
+       // Send expense message to backend - FIXED VERSION
+async function sendExpenseMessage() {
+    const text = expenseInput.value.trim();
+    if (!text) return;
+    
+    // Disable input during processing
+    expenseInput.disabled = true;
+    sendButton.disabled = true;
+    expenseInput.classList.add('loading');
+    
+    // Add user message to chat
+    addUserMessage(text);
+    
+    // Clear input
+    expenseInput.value = '';
+    
+    try {
+        console.log('Sending message to chatbot:', text);
+        
+        // Send to backend using JSON format
+        const response = await fetch(`${BACKEND_URL}/chatbot/${USER_ID}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                user_input: text
+            })
+        });
+        
+        console.log('Response status:', response.status);
+        
+        if (!response.ok) {
+            let errorDetails = '';
             try {
-                console.log('Sending message to chatbot:', text);
-                
-                // Send to backend using JSON format
-                const response = await fetch(`${BACKEND_URL}/chatbot/${USER_ID}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        user_input: text
-                    })
-                });
-                
-                console.log('Response status:', response.status);
-                
-                if (!response.ok) {
-                    let errorDetails = '';
-                    try {
-                        const errorData = await response.json();
-                        errorDetails = JSON.stringify(errorData);
-                    } catch (e) {
-                        errorDetails = response.statusText;
-                    }
-                    throw new Error(`Server error: ${response.status} - ${errorDetails}`);
+                const errorData = await response.json();
+                errorDetails = JSON.stringify(errorData);
+            } catch (e) {
+                errorDetails = response.statusText;
+            }
+            throw new Error(`Server error: ${response.status} - ${errorDetails}`);
+        }
+        
+        const data = await response.json();
+        console.log('Chatbot response data:', data);
+        
+        // FIXED: Handle the response properly
+        let responseText = '';
+        
+        // Check if response is an array (from the JSON structure)
+        if (Array.isArray(data.response)) {
+            // Parse the array structure to extract the text
+            const messageArray = data.response;
+            if (messageArray.length > 0 && messageArray[0].text) {
+                responseText = messageArray[0].text;
+            } else {
+                responseText = JSON.stringify(data.response);
+            }
+        } 
+        // Check if response is an object with a text property
+        else if (data.response && typeof data.response === 'object' && data.response.text) {
+            responseText = data.response.text;
+        }
+        // Check if response is a simple string
+        else if (typeof data.response === 'string') {
+            responseText = data.response;
+        }
+        // Fallback
+        else {
+            responseText = "Expense added successfully!";
+        }
+        
+        // Clean up [Object object] responses
+        if (responseText.includes('[object') || responseText.includes('[Object')) {
+            try {
+                const parsed = JSON.parse(responseText);
+                if (parsed.text) {
+                    responseText = parsed.text;
+                } else if (parsed.content) {
+                    responseText = parsed.content;
                 }
-                
-                const data = await response.json();
-                console.log('Chatbot response data:', data);
-                
-                // Handle the response - KEEP THE ORIGINAL SUMMARIZATION LOGIC
-                let responseText = data.response || "Expense added successfully!";
-                
-                // Check if response is an object
-                if (typeof responseText === 'object') {
-                    if (responseText.text) {
-                        responseText = responseText.text;
-                    } else if (responseText.content) {
-                        responseText = responseText.content;
-                    } else if (responseText.output) {
-                        responseText = responseText.output;
-                    } else {
-                        responseText = JSON.stringify(responseText);
-                    }
+            } catch (e) {
+                // If parsing fails, try to extract text using regex
+                const textMatch = responseText.match(/"text"\s*:\s*"([^"]+)"/);
+                if (textMatch) {
+                    responseText = textMatch[1];
                 }
-                
-                // Clean up [Object object] responses
-                if (responseText.includes('[object') || responseText.includes('[Object')) {
-                    try {
-                        const parsed = JSON.parse(responseText);
-                        if (parsed.text) {
-                            responseText = parsed.text;
-                        } else if (parsed.content) {
-                            responseText = parsed.content;
-                        }
-                    } catch (e) {
-                        // If parsing fails, try to extract text using regex
-                        const textMatch = responseText.match(/"text"\s*:\s*"([^"]+)"/);
-                        if (textMatch) {
-                            responseText = textMatch[1];
-                        }
-                    }
-                }
-                
-                // Enhanced response message for expense additions
-                if (text.toLowerCase().includes('bought') || text.toLowerCase().includes('spent') || 
-                    text.toLowerCase().includes('paid') || text.toLowerCase().includes('purchased')) {
-                    
-                    // Extract details from the user's message
-                    const amountMatch = text.match(/₹(\d+(?:\.\d{1,2})?)/) || text.match(/(\d+(?:\.\d{1,2})?)\s*(?:rs|rupees)/i);
-                    const amount = amountMatch ? amountMatch[1] : '';
-                    
-                    // Create a detailed response
-                    const today = new Date();
-                    const formattedDate = today.toLocaleDateString('en-IN', {
-                        weekday: 'long',
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                    });
-                    
-                    // If it's a simple "Expense added" message, enhance it
-                    if (responseText.toLowerCase().includes('expense added') || 
-                        responseText.toLowerCase().includes('successfully')) {
-                        
-                        // Extract category from normalized text
-                        const normalizedCategory = normalizeCategory(text);
-                        const categoryIcon = getCategoryIcon(normalizedCategory);
-                        
-                        responseText = `
-                            ✅ <strong>Expense Recorded Successfully!</strong><br><br>
-                            📝 <strong>Details:</strong><br>
-                            • <strong>Item:</strong> ${text.split('for')[0]?.trim() || 'Purchase'}<br>
-                            • <strong>Amount:</strong> ₹${amount || '(amount added)'}<br>
-                            • <strong>Category:</strong> <span class="badge ${getBadgeClass(normalizedCategory)}">${normalizedCategory}</span><br>
-                            • <strong>Date:</strong> ${formattedDate}<br><br>
-                            💡 <em>Your expense has been categorized and saved to your history.</em>
-                        `;
-                    }
-                }
-                
-                // Add AI response
-                addAIMessage(responseText);
-                
-                // Reload expenses to update sidebar
-                await loadExpenses();
-                
-            } catch (error) {
-                console.error('Error sending message:', error);
-                
-                // Show user-friendly error message
-                let userErrorMessage = `Sorry, I encountered an error: ${error.message}.`;
-                
-                // Suggest common fixes for 422 error
-                if (error.message.includes('422')) {
-                    userErrorMessage = `
-                        <p>I couldn't process that format. Try these examples:</p>
-                        <ul class="mb-0">
-                            <li>"Bought a t-shirt for ₹200"</li>
-                            <li>"Spent ₹150 on lunch"</li>
-                            <li>"Paid ₹500 for groceries today"</li>
-                            <li>"Taxi ride cost ₹300"</li>
-                        </ul>
-                    `;
-                }
-                
-                addAIMessage(userErrorMessage);
-            } finally {
-                // Re-enable input
-                expenseInput.disabled = false;
-                sendButton.disabled = false;
-                expenseInput.classList.remove('loading');
-                expenseInput.focus();
-                scrollToBottom();
             }
         }
+        
+        // Enhanced response message for expense additions
+        if (text.toLowerCase().includes('bought') || text.toLowerCase().includes('spent') || 
+            text.toLowerCase().includes('paid') || text.toLowerCase().includes('purchased')) {
+            
+            // Extract details from the user's message
+            const amountMatch = text.match(/₹(\d+(?:\.\d{1,2})?)/) || text.match(/(\d+(?:\.\d{1,2})?)\s*(?:rs|rupees)/i);
+            const amount = amountMatch ? amountMatch[1] : '';
+            
+            // Create a detailed response
+            const today = new Date();
+            const formattedDate = today.toLocaleDateString('en-IN', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            
+            // If it's a simple "Expense added" message, enhance it
+            if (responseText.toLowerCase().includes('expense added') || 
+                responseText.toLowerCase().includes('successfully')) {
+                
+                // Extract category from normalized text
+                const normalizedCategory = normalizeCategory(text);
+                const categoryIcon = getCategoryIcon(normalizedCategory);
+                
+                responseText = `
+                    ✅ <strong>Expense Recorded Successfully!</strong><br><br>
+                    📝 <strong>Details:</strong><br>
+                    • <strong>Item:</strong> ${text.split('for')[0]?.trim() || 'Purchase'}<br>
+                    • <strong>Amount:</strong> ₹${amount || '(amount added)'}<br>
+                    • <strong>Category:</strong> <span class="badge ${getBadgeClass(normalizedCategory)}">${normalizedCategory}</span><br>
+                    • <strong>Date:</strong> ${formattedDate}<br><br>
+                    💡 <em>Your expense has been categorized and saved to your history.</em>
+                `;
+            }
+        }
+        
+        // Add AI response
+        addAIMessage(responseText);
+        
+        // Reload expenses to update sidebar
+        await loadExpenses();
+        
+    } catch (error) {
+        console.error('Error sending message:', error);
+        
+        // Show user-friendly error message
+        let userErrorMessage = `Sorry, I encountered an error: ${error.message}.`;
+        
+        // Suggest common fixes for 422 error
+        if (error.message.includes('422')) {
+            userErrorMessage = `
+                <p>I couldn't process that format. Try these examples:</p>
+                <ul class="mb-0">
+                    <li>"Bought a t-shirt for ₹200"</li>
+                    <li>"Spent ₹150 on lunch"</li>
+                    <li>"Paid ₹500 for groceries today"</li>
+                    <li>"Taxi ride cost ₹300"</li>
+                </ul>
+            `;
+        }
+        
+        addAIMessage(userErrorMessage);
+    } finally {
+        // Re-enable input
+        expenseInput.disabled = false;
+        sendButton.disabled = false;
+        expenseInput.classList.remove('loading');
+        expenseInput.focus();
+        scrollToBottom();
+    }
+}
         
         // Add user message to chat
         function addUserMessage(text, timestamp = null) {
